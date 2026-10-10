@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
+  <rect x="42" y="30" width="24" height="11" rx="5.5" fill="#C4CFDC"/>
+  <rect x="22" y="37" width="64" height="41" rx="11" fill="#F4F7FB"/>
+
+  <circle cx="54" cy="57.5" r="16.5" fill="#16202B"/>
+  <circle cx="54" cy="57.5" r="11.5" fill="#7C6CF0"/>
+  <circle cx="54" cy="57.5" r="5" fill="#0B0F14"/>
+  <circle cx="49" cy="52.5" r="2.8" fill="#FFFFFF" opacity="0.85"/>
+
+  <text x="54" y="90" font-family="DejaVu Sans, Verdana, sans-serif" font-size="13"
+        font-weight="700" letter-spacing="2.6" text-anchor="middle" fill="#7C6CF0">foss</text>
+</svg>
