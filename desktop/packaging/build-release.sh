@@ -11,6 +11,6 @@ find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
 tar czf "$OUT" \
   --exclude='*__pycache__*' \
   --transform "s,^,desktop/," \
-  yoofree main.py run.sh README.md packaging
+  yoofree main.py run.sh README.md requirements.txt packaging
 
 echo "gerado: $(cd .. && pwd)/$(basename "$OUT")  ($(du -h "$OUT" | cut -f1))  versao $VERSION"

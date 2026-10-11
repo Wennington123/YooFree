@@ -1,128 +1,160 @@
 # YooFree
 
-Cliente **Android aberto e sem anúncios** para câmeras **Yoosee / GW (Gwell)**.
+Cliente **aberto e sem anúncios** para câmeras **Yoosee / GW (Gwell)**, para
+**Android, Linux e Windows**.
 
-Fala direto com a câmera na sua rede local: **sem nuvem, sem conta, sem IA, sem telemetria**.
-Só você e a sua câmera.
+Fala direto com a câmera na sua rede local: **sem nuvem, sem conta, sem IA,
+sem telemetria**. Só você e a sua câmera.
 
 <p align="center">
   <img src="assets/icon.svg" width="128" alt="YooFree">
 </p>
 
----
-
-## O que ele faz
-
-| Recurso | Descrição |
-|---|---|
-| **Vídeo ao vivo** | HEVC/H.265 1080p direto da câmera, via RTSP |
-| **PTZ** | Mover a câmera: cima, baixo, esquerda, direita |
-| **Zoom** | Zoom digital de 1x a 5x na imagem |
-| **Paisagem** | Vira o celular e o vídeo ocupa a tela toda |
-| **Girar** | Rotaciona a imagem em 90°, se a câmera estiver de cabeça pra baixo |
-| **Gravação local** | Salva MP4 no próprio celular, sem re-encode |
-
-Tudo roda **100% na sua rede**. Nada sai da sua casa.
+[![Licença: GPL-3.0](https://img.shields.io/badge/licen%C3%A7a-GPL--3.0-7C6CF0.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Wennington123/YooFree)](../../releases)
+[![Build](https://github.com/Wennington123/YooFree/actions/workflows/build.yml/badge.svg)](../../actions)
 
 ---
 
-## Requisitos
+## Versões
 
-- Uma câmera **Yoosee / GW (Gwell)** (o app oficial é o `yoosee.app`)
-- Celular **Android 7.0+**, na **mesma rede Wi‑Fi** da câmera
-- Saber o **IP local da câmera** (veja abaixo)
+| Plataforma | Pacote | Como instalar |
+|---|---|---|
+| **Android** 7+ | `YooFree-0.1.apk` | baixe na aba [Releases](../../releases) e instale |
+| **Linux** (qualquer distro) | `yoofree-desktop.tar.gz` | um comando (veja abaixo) |
+| **Windows** 10 / 11 | `YooFree-windows-x64.zip` | descompacte e rode `YooFree.exe` |
+
+Todas as versões fazem a mesma coisa:
+
+- 📹 **Vídeo ao vivo** HEVC/H.265 1080p direto da câmera
+- 🕹️ **PTZ**: mover a câmera (cima / baixo / esquerda / direita)
+- 🔍 **Zoom** digital de 1x a 5x
+- 🎥 **Gravação local** em MP4 (sem re-encode, sem nuvem)
+- 🔄 **Girar** a imagem em 90° (útil se a câmera estiver "de cabeça pra baixo")
+
+E o Android ainda tem **modo paisagem** (vira o celular e o vídeo ocupa a tela toda).
+
+---
+
+## Android
+
+1. Baixe o **`YooFree-0.1.apk`** na aba [Releases](../../releases).
+2. Autorize "instalar de fontes desconhecidas" quando o Android pedir.
+3. Abra o app, digite o **IP da câmera** (ex.: `192.168.1.2`) e toque em **Conectar**.
+4. **PTZ** pelas setas, **zoom** no `−`/`+`, **girar** no botão, **gravar** no botão.
+   Os vídeos ficam em `Android/data/br.yoofree.app/files/YooFree/`.
+
+O celular precisa estar no **mesmo Wi‑Fi** da câmera.
+
+---
+
+## Linux
+
+Instalação por comando, em qualquer distro:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Wennington123/YooFree/main/desktop/packaging/install.sh | bash
+```
+
+O instalador:
+- confere as dependências e **detecta o gerenciador de pacotes**
+  (pacman, apt, dnf, zypper, apk, xbps, emerge)
+- instala em `~/.local` (o app não precisa de root)
+- cria o comando **`yoofree`** e um atalho no menu
+
+Depois é só:
+
+```bash
+yoofree                       # abre a janela
+yoofree --host 192.168.1.2    # já conecta na câmera
+```
+
+Os vídeos vão para `~/Videos/YooFree/`. Detalhes em
+[desktop/README.md](desktop/README.md).
+
+---
+
+## Windows 10 / 11
+
+1. Baixe o **`YooFree-windows-x64.zip`** na aba [Releases](../../releases).
+2. Descompacte em qualquer pasta.
+3. Rode **`YooFree.exe`**.
+
+> Na primeira vez o Windows pode mostrar o aviso azul do SmartScreen
+> ("Windows protegeu o seu PC"), porque o executável não tem assinatura paga.
+> Clique em **Mais informações → Executar assim mesmo**.
+>
+> O `YooFree.exe` é portátil: não instala nada e não escreve no registro.
+> Os vídeos vão para `%USERPROFILE%\Videos\YooFree\`.
 
 ---
 
 ## Como descobrir o IP da câmera
 
-1. Abra o app oficial da Yoosee e configure a câmera normalmente.
-2. Veja a lista de dispositivos conectados no seu roteador — a câmera aparece com um IP tipo `192.168.1.2`.
-3. Ou, no app oficial, veja em **Configurações da câmera → Informações da rede**.
+1. Configure a câmera normalmente no app oficial da Yoosee.
+2. Veja os dispositivos conectados no seu roteador — a câmera aparece com um IP
+   tipo `192.168.1.2`.
+3. Ou, no app oficial: **Configurações da câmera → Informações da rede**.
 
-> Dica: fixe o IP da câmera no roteador (DHCP reservado) pra ele não mudar depois.
-
----
-
-## Instalação
-
-1. Baixe o APK mais recente na aba **[Releases](../../releases)**.
-2. No celular, permita "instalar de fontes desconhecidas" quando o Android pedir.
-3. Instale e pronto.
-
----
-
-## Como usar
-
-1. **Conecte na rede**: o celular precisa estar no mesmo Wi‑Fi da câmera.
-2. Digite o **IP da câmera** no campo **IP da câmera** (ex.: `192.168.1.2`).
-3. Toque em **Conectar**. O vídeo aparece em alguns segundos.
-4. **PTZ**: use as setas `^ v < >` para mover a câmera.
-5. **Zoom**: os botões **−** e **+** (1x até 5x).
-6. **Gravar**: toque em **Gravar** para começar e **Parar** para finalizar.
-   O MP4 fica em:
-   ```
-   Android/data/br.yoofree.app/files/YooFree/
-   ```
-7. **Girar a tela**: vire o celular na horizontal — o vídeo ocupa a tela toda.
-   Se a imagem ficar de cabeça pra baixo, use o botão **Girar**.
+> Dica: fixe o IP no roteador (reserva DHCP) pra ele não mudar depois.
 
 ---
 
 ## Perguntas frequentes
 
 **Preciso da senha da câmera?**
-Não. O YooFree usa o RTSP local da câmera, que nessa linha não exige autenticação
-para `SETUP`/`PLAY`. Só o IP basta.
+Não. O YooFree usa o RTSP local, que nessa linha não exige autenticação para
+`SETUP`/`PLAY`. Só o IP basta.
 
-**O app fala com a nuvem da Yoosee?**
+**Fala com a nuvem da Yoosee?**
 Não. A conexão é direta (`IP:554`), na sua rede local.
 
 **Funciona fora de casa?**
-Não por enquanto — o acesso remoto está fora do escopo. Use uma VPN
-(ex.: WireGuard/Tailscale) se quiser ver de fora, e mantenha o celular na VPN.
+Não por enquanto — acesso remoto está fora do escopo. Use uma VPN
+(WireGuard/Tailscale) e mantenha o aparelho na VPN.
 
-**Por que o app tem um cliente RTSP próprio?**
+**Por que um cliente RTSP próprio?**
 Porque essas câmeras **não falam RTSP padrão**: o `DESCRIBE` responde
 `400 Bad Request` quando o cliente manda autenticação, então players prontos
-(ExoPlayer, VLC, ffmpeg) não conseguem ler o SDP. O YooFree implementa o
-mínimo que a câmera aceita (`SETUP` + `PLAY`, e `SET_PARAMETER` para PTZ) e faz
-a depacketização HEVC na mão.
+(VLC, ffmpeg, ExoPlayer, GStreamer) não conseguem ler o SDP. O YooFree faz o
+mínimo que a câmera aceita (`SETUP` + `PLAY`, e `SET_PARAMETER` para PTZ) e
+depacketiza o HEVC na mão.
 
-**Por que o MP4 não usa o MediaMuxer do Android?**
+**Por que o Android não usa o MediaMuxer?**
 Porque em vários aparelhos (ex.: Samsung) o `MediaMuxer` **crasha nativamente**
-com HEVC. O YooFree tem um **muxer MP4 próprio** (`Mp4Muxer.kt`), que escreve os
-boxes na mão — estável em qualquer aparelho.
+com HEVC. O YooFree tem um **muxer MP4 próprio**, que escreve os boxes na mão.
+Essa mesma lógica é usada no Linux e no Windows.
 
 **Posso usar em mais de uma câmera?**
-Hoje o app conecta em uma por vez (essas câmeras costumam aceitar poucas sessões
-RTSP simultâneas).
+Hoje conecta em uma por vez (essas câmeras costumam aceitar poucas sessões RTSP
+simultâneas).
 
 ---
 
-## Estrutura do projeto
+## Estrutura do repositório
 
 ```
-app/src/main/java/br/yoofree/app/
-  MainActivity.kt      interface (Compose), retrato e paisagem
-  CameraViewModel.kt   mantém a sessão viva ao girar a tela
-  CameraSession.kt     junta cliente + decoder + gravador
-  rtsp/
-    RtspClient.kt      cliente RTSP mínimo (SETUP/PLAY + PTZ)
-    HevcDepacketizer.kt  RTP -> access units HEVC (NAL único/AP/FU)
-  media/
-    VideoDecoder.kt    MediaCodec HEVC -> Surface
-    Mp4Muxer.kt        muxer MP4 próprio (HEVC)
-assets/
-  icon.svg             ícone (câmera + "foss")
-scripts/               toolchain local e geração de ícones
+app/          versão Android (Kotlin + Compose)
+desktop/      versões Linux e Windows (Python + PySide6)
+  yoofree/
+    rtsp.py       cliente RTSP mínimo (SETUP/PLAY + PTZ)
+    hevc.py       depacketizer RTP -> HEVC
+    muxer.py      muxer MP4 próprio
+    player.py     escolhe o backend de vídeo
+    player_gst.py backend GStreamer (Linux)
+    player_av.py  backend PyAV/FFmpeg (Windows)
+    ui.py         interface (PySide6)
+  packaging/  instalador universal e build dos pacotes
+assets/       ícone (SVG)
+scripts/      toolchain Android local
+.github/      workflows (APK, Windows)
 ```
 
 ---
 
-## Compilar do zero
+## Compilar do código
 
-O toolchain fica **isolado dentro do projeto** (não mexe no sistema):
+**Android** (toolchain isolado, não mexe no sistema):
 
 ```bash
 bash scripts/setup-toolchain.sh   # JDK 17 + Android SDK
@@ -131,8 +163,16 @@ source scripts/env.sh
 ./gradlew assembleDebug           # ou assembleRelease
 ```
 
-Também dá pra compilar pelo **GitHub Actions** (`.github/workflows/build.yml`):
-o APK sai como artifact de cada push.
+**Linux / Windows** (Python 3.9+):
+
+```bash
+cd desktop
+pip install -r requirements.txt   # PySide6 + av
+python3 main.py --host 192.168.1.2
+```
+
+O executável do Windows é gerado pelo GitHub Actions
+(`.github/workflows/desktop-windows.yml`, PyInstaller no `windows-latest`).
 
 ---
 
@@ -140,8 +180,8 @@ o APK sai como artifact de cada push.
 
 - O app é **somente leitura** sobre a câmera (vídeo + PTZ). Não altera firmware.
 - A câmera é acessada apenas na **rede local**.
-- Recomendado: bloqueie o acesso da câmera à internet no seu roteador — ela
-  tenta falar com servidores na nuvem que não são necessários pra nada aqui.
+- Recomendado: bloqueie o acesso da câmera à internet no roteador — ela tenta
+  falar com servidores na nuvem que não são necessários pra nada aqui.
 - Use apenas em câmeras **suas**.
 
 ---
@@ -150,26 +190,3 @@ o APK sai como artifact de cada push.
 
 **GPL-3.0-or-later** — veja [LICENSE](LICENSE). Livre pra usar, estudar e
 modificar; derivados continuam abertos.
-
----
-
-## Versão Linux (desktop)
-
-Também tem a versão para **Linux**, em `desktop/` — mesma ideia, feita em
-**Python + PySide6** com o vídeo decodificado pelo **GStreamer**.
-
-Instalação por comando (qualquer distro):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Wennington123/YooFree/main/desktop/packaging/install.sh | bash
-```
-
-O instalador detecta o gerenciador de pacotes (pacman, apt, dnf, zypper, apk,
-xbps, emerge), instala o que faltar, e cria o comando **`yoofree`**:
-
-```bash
-yoofree                       # abre a janela
-yoofree --host 192.168.1.2    # já conecta
-```
-
-Detalhes em [desktop/README.md](desktop/README.md).
