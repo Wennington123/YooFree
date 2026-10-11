@@ -11,3 +11,7 @@ captures/
 *.keystore
 *.jks
 *.tar.gz
+dist/
+__pycache__/
+*.pyc
+desktop/YooFree.spec

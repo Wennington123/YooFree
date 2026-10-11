@@ -1,0 +1,64 @@
+name: desktop-windows
+
+on:
+  push:
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: pip install PySide6 av pyinstaller
+
+      - name: Build do executavel
+        working-directory: desktop
+        run: >
+          pyinstaller --noconfirm --windowed --name YooFree
+          --collect-submodules yoofree
+          --collect-binaries av
+          --collect-data av
+          --exclude-module PySide6.QtWebEngineCore
+          --exclude-module PySide6.QtWebEngineWidgets
+          --exclude-module PySide6.Qt3DCore
+          --exclude-module PySide6.QtMultimedia
+          --exclude-module PySide6.QtCharts
+          --exclude-module PySide6.QtPdf
+          --exclude-module tkinter
+          main.py
+
+      - name: Empacotar zip
+        shell: pwsh
+        run: Compress-Archive -Path desktop/dist/YooFree/* -DestinationPath YooFree-windows-x64.zip
+
+      - name: Publicar artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yoofree-windows-x64
+          path: YooFree-windows-x64.zip
+          if-no-files-found: error
+
+      - name: Anexar ao release (se existir)
+        if: github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v0.1 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload v0.1 YooFree-windows-x64.zip --clobber
+          } else {
+            Write-Host "release v0.1 ainda nao existe; so artifact"
+          }

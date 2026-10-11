@@ -1,0 +1,3 @@
+# YooFree desktop - dependencias
+PySide6>=6.6
+av>=12.0

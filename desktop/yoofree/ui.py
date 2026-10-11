@@ -17,10 +17,17 @@ from PySide6.QtWidgets import (
 
 from .hevc import HevcDepacketizer
 from .muxer import Mp4Muxer
-from .player import VideoPlayer
+from .player import create_player
 from .rtsp import RtspClient
 
 MIN_ZOOM, MAX_ZOOM, ZOOM_STEP = 1.0, 5.0, 0.5
+
+
+def default_output_dir() -> Path:
+    """Pasta de gravacao (~/Videos/YooFree), funcionando tambem no Windows."""
+    videos = Path.home() / "Videos"
+    base = videos if videos.is_dir() else Path.home()
+    return base / "YooFree"
 
 
 class VideoWidget(QWidget):
@@ -67,7 +74,7 @@ class Controller(QObject):
 
     def __init__(self):
         super().__init__()
-        self.player = VideoPlayer()
+        self.player = create_player()
         self.client = None
         self.muxer = None
         self.vps = self.sps = self.pps = None
@@ -149,7 +156,7 @@ class MainWindow(QWidget):
         self.controller.auReceived.connect(self._on_au)
         self.controller.player.frameReady.connect(self._on_frame)
         self.controller.player.error.connect(self._on_state)
-        self.out_dir = Path.home() / "Videos" / "YooFree"
+        self.out_dir = default_output_dir()
 
         self.video = VideoWidget()
         self.status = QLabel("Parado")
