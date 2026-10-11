@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'desktop/**'
+      - 'assets/icon.ico'
       - '.github/workflows/desktop-windows.yml'
   workflow_dispatch:
 
@@ -12,13 +13,23 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: windows-latest
+          - arch: arm64
+            runner: windows-11-arm
+    runs-on: ${{ matrix.runner }}
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          architecture: ${{ matrix.arch }}
 
       - name: Instalar dependencias
         run: pip install PySide6 av pyinstaller
@@ -27,6 +38,7 @@ jobs:
         working-directory: desktop
         run: >
           pyinstaller --noconfirm --windowed --name YooFree
+          --icon ..\assets\icon.ico
           --collect-submodules yoofree
           --collect-binaries av
           --collect-data av
@@ -39,26 +51,44 @@ jobs:
           --exclude-module tkinter
           main.py
 
-      - name: Empacotar zip
+      - name: Pacote portatil (zip)
         shell: pwsh
-        run: Compress-Archive -Path desktop/dist/YooFree/* -DestinationPath YooFree-windows-x64.zip
+        run: Compress-Archive -Path desktop/dist/YooFree/* -DestinationPath "YooFree-windows-${{ matrix.arch }}.zip"
+
+      - name: Instalar Inno Setup
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://jrsoftware.org/download.php/is.exe" -OutFile "is.exe"
+          Start-Process ".\is.exe" -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART","/SP-" -Wait
+          Get-ChildItem "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" | Select-Object FullName
+
+      - name: Gerar instalador
+        working-directory: desktop/packaging
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DArch=${{ matrix.arch }}" "yoofree.iss"
 
       - name: Publicar artifact
         uses: actions/upload-artifact@v4
         with:
-          name: yoofree-windows-x64
-          path: YooFree-windows-x64.zip
+          name: yoofree-windows-${{ matrix.arch }}
+          path: |
+            YooFree-windows-${{ matrix.arch }}.zip
+            desktop/dist_installer/YooFree-Setup-${{ matrix.arch }}.exe
           if-no-files-found: error
 
-      - name: Anexar ao release (se existir)
+      - name: Anexar ao release
         if: github.ref == 'refs/heads/main'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view v0.1 2>$null
+          gh release view v0.1 *> $null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload v0.1 YooFree-windows-x64.zip --clobber
+            gh release upload v0.1 `
+              "YooFree-windows-${{ matrix.arch }}.zip" `
+              "desktop/dist_installer/YooFree-Setup-${{ matrix.arch }}.exe" `
+              --clobber
           } else {
             Write-Host "release v0.1 ainda nao existe; so artifact"
           }
