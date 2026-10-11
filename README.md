@@ -22,7 +22,10 @@ sem telemetria**. Só você e a sua câmera.
 |---|---|---|
 | **Android** 7+ | `YooFree-0.1.apk` | baixe na aba [Releases](../../releases) e instale |
 | **Linux** (qualquer distro) | `yoofree-desktop.tar.gz` | um comando (veja abaixo) |
-| **Windows** 10 / 11 | `YooFree-windows-x64.zip` | descompacte e rode `YooFree.exe` |
+| **Windows** 10/11 (x64) | `YooFree-Setup-x64.exe` | instalador (com atalhos e desinstalador) |
+| **Windows** 10/11 (ARM64) | `YooFree-Setup-arm64.exe` | instalador (com atalhos e desinstalador) |
+
+Também tem as versões **portáteis** (`.zip`), pra quem não quer instalar.
 
 Todas as versões fazem a mesma coisa:
 
@@ -76,16 +79,29 @@ Os vídeos vão para `~/Videos/YooFree/`. Detalhes em
 
 ## Windows 10 / 11
 
-1. Baixe o **`YooFree-windows-x64.zip`** na aba [Releases](../../releases).
-2. Descompacte em qualquer pasta.
-3. Rode **`YooFree.exe`**.
+Escolha a versão da sua máquina:
 
-> Na primeira vez o Windows pode mostrar o aviso azul do SmartScreen
+- **x64** (Intel/AMD): `YooFree-Setup-x64.exe`
+- **ARM64** (Snapdragon, Surface Pro X, notebooks ARM): `YooFree-Setup-arm64.exe`
+
+**Instalador** (recomendado):
+
+1. Baixe o `YooFree-Setup-<arch>.exe` na aba [Releases](../../releases).
+2. Rode o instalador — ele cria atalho no Menu Iniciar (e opcionalmente na
+   Área de Trabalho), com ícone, e tem desinstalador normal pelo Painel de Controle.
+3. Não precisa de admin (dá pra instalar só pro seu usuário).
+
+**Portátil** (sem instalar): baixe `YooFree-windows-<arch>.zip`, descompacte e
+rode `YooFree.exe`. Não escreve nada no registro.
+
+> Na primeira execução o Windows pode mostrar o aviso azul do SmartScreen
 > ("Windows protegeu o seu PC"), porque o executável não tem assinatura paga.
 > Clique em **Mais informações → Executar assim mesmo**.
 >
-> O `YooFree.exe` é portátil: não instala nada e não escreve no registro.
 > Os vídeos vão para `%USERPROFILE%\Videos\YooFree\`.
+
+Pra saber sua arquitetura: **Configurações → Sistema → Sobre** (procure
+"Tipo de sistema").
 
 ---
 

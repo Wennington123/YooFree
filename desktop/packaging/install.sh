@@ -34,6 +34,8 @@ have_python() { command -v python3 >/dev/null 2>&1; }
 have_pyside() { python3 -c "import PySide6" 2>/dev/null; }
 have_gi() { python3 -c "import gi; gi.require_version('Gst','1.0'); from gi.repository import Gst" 2>/dev/null; }
 have_gst() { command -v gst-inspect-1.0 >/dev/null 2>&1 && gst-inspect-1.0 avdec_h265 >/dev/null 2>&1; }
+have_numpy() { python3 -c "import numpy" 2>/dev/null; }
+have_av() { python3 -c "import av" 2>/dev/null; }
 
 detect_pm() {
   for pm in pacman apt-get dnf zypper apk xbps-install emerge; do
@@ -49,34 +51,44 @@ pkg_names() {
   have_gi || need_gi=1
   have_gst || need_gst=1
   have_pyside || need_pyside=1
+  # sem GStreamer o video usa PyAV, que precisa de numpy
+  local need_numpy=0
+  if [ "$need_gst" = 1 ]; then have_numpy || need_numpy=1; fi
   case "$pm" in
     pacman)
       [ $need_gi = 1 ] && pkgs="$pkgs python-gobject"
       [ $need_gst = 1 ] && pkgs="$pkgs gstreamer gst-plugins-base gst-plugins-good gst-plugins-bad gst-libav gst-plugins-ugly"
+      [ $need_numpy = 1 ] && pkgs="$pkgs python-numpy"
       [ $need_pyside = 1 ] && pkgs="$pkgs pyside6" ;;
     apt-get)
       [ $need_gi = 1 ] && pkgs="$pkgs python3-gi gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0"
       [ $need_gst = 1 ] && pkgs="$pkgs gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav"
+      [ $need_numpy = 1 ] && pkgs="$pkgs python3-numpy"
       [ $need_pyside = 1 ] && pkgs="$pkgs python3-pyside6.qtwidgets python3-pyside6.qtgui python3-pyside6.qtcore" ;;
     dnf)
       [ $need_gi = 1 ] && pkgs="$pkgs python3-gobject"
       [ $need_gst = 1 ] && pkgs="$pkgs gstreamer1-plugins-base gstreamer1-plugins-good gstreamer1-plugins-bad-free gstreamer1-plugins-ugly-free gstreamer1-libav"
+      [ $need_numpy = 1 ] && pkgs="$pkgs python3-numpy"
       [ $need_pyside = 1 ] && pkgs="$pkgs python3-pyside6" ;;
     zypper)
       [ $need_gi = 1 ] && pkgs="$pkgs python3-gobject python3-gobject-Gdk"
       [ $need_gst = 1 ] && pkgs="$pkgs gstreamer-plugins-base gstreamer-plugins-good gstreamer-plugins-bad gstreamer-plugins-libav"
+      [ $need_numpy = 1 ] && pkgs="$pkgs python3-numpy"
       [ $need_pyside = 1 ] && pkgs="$pkgs python3-pyside6" ;;
     apk)
       [ $need_gi = 1 ] && pkgs="$pkgs py3-gobject3"
       [ $need_gst = 1 ] && pkgs="$pkgs gst-plugins-base gst-plugins-good gst-plugins-bad gst-libav"
+      [ $need_numpy = 1 ] && pkgs="$pkgs py3-numpy"
       [ $need_pyside = 1 ] && pkgs="$pkgs py3-pyside6" ;;
     xbps-install)
       [ $need_gi = 1 ] && pkgs="$pkgs python3-gobject"
       [ $need_gst = 1 ] && pkgs="$pkgs gst-plugins-base1 gst-plugins-good1 gst-plugins-bad1 gst-libav1"
+      [ $need_numpy = 1 ] && pkgs="$pkgs python3-numpy"
       [ $need_pyside = 1 ] && pkgs="$pkgs python3-pyside6" ;;
     emerge)
       [ $need_gi = 1 ] && pkgs="$pkgs dev-python/pygobject"
       [ $need_gst = 1 ] && pkgs="$pkgs media-plugins/gst-plugins-meta"
+      [ $need_numpy = 1 ] && pkgs="$pkgs dev-python/numpy"
       [ $need_pyside = 1 ] && pkgs="$pkgs dev-python/pyside6" ;;
   esac
   echo "$pkgs"
@@ -102,6 +114,8 @@ check_deps() {
   have_pyside || missing="$missing PySide6"
   have_gi || missing="$missing PyGObject(gi)"
   have_gst || missing="$missing GStreamer+avdec_h265"
+  if ! have_gst && ! have_numpy; then missing="$missing numpy"; fi
+  if ! have_gst && ! have_av; then missing="$missing av(PyAV)"; fi
   if [ -z "$missing" ]; then
     ok "Tudo pronto (Python, PySide6, GStreamer)."
     return

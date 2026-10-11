@@ -32,7 +32,7 @@ jobs:
           architecture: ${{ matrix.arch }}
 
       - name: Instalar dependencias
-        run: pip install PySide6 av pyinstaller
+        run: pip install PySide6 av numpy pyinstaller
 
       - name: Build do executavel
         working-directory: desktop
@@ -42,6 +42,10 @@ jobs:
           --collect-submodules yoofree
           --collect-binaries av
           --collect-data av
+          --hidden-import numpy
+          --hidden-import av
+          --hidden-import av.codec
+          --hidden-import av.video
           --exclude-module PySide6.QtWebEngineCore
           --exclude-module PySide6.QtWebEngineWidgets
           --exclude-module PySide6.Qt3DCore
@@ -58,15 +62,22 @@ jobs:
       - name: Instalar Inno Setup
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri "https://jrsoftware.org/download.php/is.exe" -OutFile "is.exe"
-          Start-Process ".\is.exe" -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART","/SP-" -Wait
-          Get-ChildItem "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" | Select-Object FullName
+          choco install innosetup --no-progress -y
+          $cands = @(
+            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+            "C:\Program Files\Inno Setup 6\ISCC.exe"
+          )
+          $iscc = $cands | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) { throw "ISCC.exe nao encontrado" }
+          Write-Host "ISCC: $iscc"
+          "ISCC=$iscc" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Gerar instalador
         working-directory: desktop/packaging
         shell: pwsh
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DArch=${{ matrix.arch }}" "yoofree.iss"
+          & $env:ISCC "/DArch=${{ matrix.arch }}" "yoofree.iss"
+          Get-ChildItem ..\dist_installer | Select-Object Name,Length
 
       - name: Publicar artifact
         uses: actions/upload-artifact@v4

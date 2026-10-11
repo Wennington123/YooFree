@@ -38,11 +38,22 @@ Desinstalar: `bash packaging/uninstall.sh`
 
 ## Windows 10 / 11
 
-Baixe o **`YooFree-windows-x64.zip`** no [release](../../releases), descompacte
-e rode **`YooFree.exe`**. É portátil (não instala nada, não mexe no registro).
+Escolha pela arquitetura (**Configurações → Sistema → Sobre → Tipo de sistema**):
 
-> O SmartScreen pode avisar na primeira execução (o exe não tem assinatura
-> paga): **Mais informações → Executar assim mesmo**.
+| Arquitetura | Instalador | Portátil |
+|---|---|---|
+| x64 (Intel/AMD) | `YooFree-Setup-x64.exe` | `YooFree-windows-x64.zip` |
+| ARM64 (Snapdragon/Surface ARM) | `YooFree-Setup-arm64.exe` | `YooFree-windows-arm64.zip` |
+
+**Instalador**: cria atalho no Menu Iniciar (e opcionalmente na Área de Trabalho),
+com ícone próprio, e desinstala pelo Painel de Controle. Não exige admin.
+
+**Portátil**: descompacte e rode `YooFree.exe` — não instala nada nem mexe no registro.
+
+> O SmartScreen pode avisar na primeira execução (o exe não tem assinatura paga):
+> **Mais informações → Executar assim mesmo**.
+
+Os vídeos vão para `%USERPROFILE%\Videos\YooFree\`.
 
 ---
 
@@ -53,6 +64,7 @@ e rode **`YooFree.exe`**. É portátil (não instala nada, não mexe no registro
 | Python 3.9+ | runtime |
 | **PySide6** | interface |
 | **av** (PyAV) | decodificar HEVC no Windows |
+| **numpy** | conversão dos frames (usada pelo PyAV) |
 | **GStreamer** + `gst-plugins-bad`/`gst-libav` | opcional, no Linux (mais leve) |
 
 ```bash
