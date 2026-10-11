@@ -150,3 +150,26 @@ o APK sai como artifact de cada push.
 
 **GPL-3.0-or-later** — veja [LICENSE](LICENSE). Livre pra usar, estudar e
 modificar; derivados continuam abertos.
+
+---
+
+## Versão Linux (desktop)
+
+Também tem a versão para **Linux**, em `desktop/` — mesma ideia, feita em
+**Python + PySide6** com o vídeo decodificado pelo **GStreamer**.
+
+Instalação por comando (qualquer distro):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Wennington123/YooFree/main/desktop/packaging/install.sh | bash
+```
+
+O instalador detecta o gerenciador de pacotes (pacman, apt, dnf, zypper, apk,
+xbps, emerge), instala o que faltar, e cria o comando **`yoofree`**:
+
+```bash
+yoofree                       # abre a janela
+yoofree --host 192.168.1.2    # já conecta
+```
+
+Detalhes em [desktop/README.md](desktop/README.md).

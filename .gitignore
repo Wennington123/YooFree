@@ -10,3 +10,4 @@ captures/
 *.aab
 *.keystore
 *.jks
+*.tar.gz
