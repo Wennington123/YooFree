@@ -20,7 +20,7 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Como instalar |
 |---|---|---|
-| **Android** 7+ | `YooFree-0.1.apk` | baixe na aba [Releases](../../releases) e instale |
+| **Android** 7+ | `app-debug.apk` (v0.2) | baixe na aba [Releases](../../releases) e instale |
 | **Linux** (qualquer distro) | `yoofree-desktop.tar.gz` | um comando (veja abaixo) |
 | **Windows** 10/11 (x64) | `YooFree-Setup-x64.exe` | instalador (com atalhos e desinstalador) |
 | **Windows** 10/11 (ARM64) | `YooFree-Setup-arm64.exe` | instalador (com atalhos e desinstalador) |
@@ -39,9 +39,18 @@ E o Android ainda tem **modo paisagem** (vira o celular e o vídeo ocupa a tela 
 
 ---
 
+## Novidades da v0.2
+
+- 🛠️ **Correção do crash ao Conectar** em alguns aparelhos (ex.: Redmi Note 12S,
+  Android 15) — o decoder HEVC agora se recupera sozinho quando o codec cai
+- 🛠️ **Câmeras com firmware novo**: resolve o `SETUP 405 Method Not Allowed`
+  tentando URIs alternativas aceitas pelo RTSP dessas câmeras
+
+---
+
 ## Android
 
-1. Baixe o **`YooFree-0.1.apk`** na aba [Releases](../../releases).
+1. Baixe o APK da versão atual na aba [Releases](../../releases).
 2. Autorize "instalar de fontes desconhecidas" quando o Android pedir.
 3. Abra o app, digite o **IP da câmera** (ex.: `192.168.1.2`) e toque em **Conectar**.
 4. **PTZ** pelas setas, **zoom** no `−`/`+`, **girar** no botão, **gravar** no botão.
@@ -126,8 +135,8 @@ Não. O YooFree usa o RTSP local, que nessa linha não exige autenticação para
 Não. A conexão é direta (`IP:554`), na sua rede local.
 
 **Funciona fora de casa?**
-Não por enquanto — acesso remoto está fora do escopo. Use uma VPN
-(WireGuard/Tailscale) e mantenha o aparelho na VPN.
+Não por enquanto — acesso remoto está nos planos (veja abaixo). Enquanto isso,
+use uma VPN (WireGuard/Tailscale) e mantenha o aparelho na VPN.
 
 **Por que um cliente RTSP próprio?**
 Porque essas câmeras **não falam RTSP padrão**: o `DESCRIBE` responde
@@ -143,7 +152,55 @@ Essa mesma lógica é usada no Linux e no Windows.
 
 **Posso usar em mais de uma câmera?**
 Hoje conecta em uma por vez (essas câmeras costumam aceitar poucas sessões RTSP
-simultâneas).
+simultâneas). Suporte a múltiplas câmeras está nos planos.
+
+---
+
+## No futuro (implementações e sugestões)
+
+Ideias que estão no radar, em ordem de prioridade — sugestões novas são bem-vindas
+nas [issues](../../issues):
+
+- 🕹️ **PTZ à prova de câmera**: mover o controle PTZ do canal RTSP para o
+  protocolo nativo das câmeras dessa linha (DVRIP/XMeye, porta 34567 — o mesmo
+  caminho que os apps oficiais usam), com fallback pro meio atual. Já temos o
+  estudo pronto em [docs/research/RESEARCH-PTZ.md](docs/research/RESEARCH-PTZ.md)
+- 🌐 **Acessar fora do Wi‑Fi local**: o cliente YooFree sem depender de VPN —
+  pela sua própria nuvem (protocolo P2P das câmeras) ou por túnel embutido;
+  é a funcionalidade mais pedida depois do PTZ
+- 🎛️ **Direções PTZ normalizadas**: inverter esquerda/direita e cima/baixo
+  automaticamente quando a câmera está montada de cabeça pra baixo (como o app
+  oficial faz)
+- 📷 **Suporte a mais câmeras**: iCSee/XMEye (afinal, é o mesmo protocolo nativo),
+  Novus/Dahua/Intelbras (SDK dahua) e afins — o RTSP de vídeo já é o mesmo caminho
+- 🔢 **Múltiplas câmeras** no mesmo app, com lista/grid
+- 🗑️ (provavelmente **não** vai): câmeras Tuya — o PTZ delas só funciona pela
+  nuvem da Tuya, que é oposta ao jeito "sem nuvem" do YooFree
+
+---
+
+## Apoiar o projeto
+
+O YooFree é 100% gratuito, sem anúncio e open source. Se ele te economizou um
+app antigo cheio de ad (ou umas semanas de dor de cabeça), tomo um café: ☕
+
+### Pix
+
+<p align="center">
+  <img src="assets/pix-qrcode.png" width="220" alt="QR Code Pix">
+</p>
+
+- **Chave (telefone):** `+55 74 98821-7793`
+- **Valor:** o que você escolher (QR também aceita valor livre no app do banco)
+- Ou copie o código Pix: 
+
+```
+00020126360014br.gov.bcb.pix0114+55749882177935204000053039865802BR5910WENNINGTON6009BARREIRAS62070503***6304D509
+```
+
+### Buy Me a Coffee
+
+Em breve — apoio internacional via cartão, pra quem não tem Pix.
 
 ---
 
@@ -161,7 +218,8 @@ desktop/      versões Linux e Windows (Python + PySide6)
     player_av.py  backend PyAV/FFmpeg (Windows)
     ui.py         interface (PySide6)
   packaging/  instalador universal e build dos pacotes
-assets/       ícone (SVG)
+assets/       ícone (SVG) + QR do Pix
+docs/         pesquisa de protocolo (engenharia reversa dos apps oficiais)
 scripts/      toolchain Android local
 .github/      workflows (APK, Windows)
 ```
@@ -187,8 +245,8 @@ pip install -r requirements.txt   # PySide6 + av
 python3 main.py --host 192.168.1.2
 ```
 
-O executável do Windows é gerado pelo GitHub Actions
-(`.github/workflows/desktop-windows.yml`, PyInstaller no `windows-latest`).
+O APK e o instalador do Windows são gerados pelo GitHub Actions
+(`.github/workflows/build.yml` e `desktop-windows.yml`).
 
 ---
 
