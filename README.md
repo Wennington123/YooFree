@@ -190,12 +190,13 @@ app antigo cheio de ad (ou umas semanas de dor de cabeça), tomo um café: ☕
   <img src="assets/pix-qrcode.png" width="220" alt="QR Code Pix">
 </p>
 
+- **Recebedor:** Wennington Dias Aquino
 - **Chave (telefone):** `+55 74 98821-7793`
 - **Valor:** o que você escolher (QR também aceita valor livre no app do banco)
-- Ou copie o código Pix: 
+- Ou copie o código Pix:
 
 ```
-00020126360014br.gov.bcb.pix0114+55749882177935204000053039865802BR5910WENNINGTON6009BARREIRAS62070503***6304D509
+00020126360014br.gov.bcb.pix0114+55749882177935204000053039865802BR5922WENNINGTON DIAS AQUINO62070503***63044EF7
 ```
 
 ### Buy Me a Coffee
