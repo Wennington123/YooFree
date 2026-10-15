@@ -97,8 +97,9 @@ class VideoDecoder(
     }
 
     private fun configureInternal() {
+        var c: MediaCodec? = null
         try {
-            val c = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_HEVC)
+            c = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_HEVC)
             val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_HEVC, WIDTH, HEIGHT)
             format.setByteBuffer("csd-0", ByteBuffer.wrap(withStartCode(vps!!)))
             format.setByteBuffer("csd-1", ByteBuffer.wrap(withStartCode(sps!!)))
@@ -109,6 +110,9 @@ class VideoDecoder(
             configured = true
             Log.i(TAG, "decoder HEVC configurado")
         } catch (t: Throwable) {
+            runCatching { c?.release() }
+            codec = null
+            configured = false
             Log.e(TAG, "falha ao configurar", t)
             onError("Falha ao configurar decodificador: ${t.message}")
         }
@@ -131,33 +135,49 @@ class VideoDecoder(
                     return@synchronized
                 }
 
-                val inIndex = runCatching { c.dequeueInputBuffer(10_000) }.getOrDefault(-1)
-                if (inIndex >= 0) {
-                    val item = queue.pollFirst()
-                    val input = c.getInputBuffer(inIndex)
-                    if (input != null) {
-                        input.clear()
-                        if (item != null) {
-                            input.put(item.first)
-                            c.queueInputBuffer(inIndex, 0, item.first.size, item.second, 0)
-                        } else {
-                            c.queueInputBuffer(inIndex, 0, 0, 0, 0)
-                        }
+                try {
+                    runDecodeCycle(c, info)
+                } catch (e: IllegalStateException) {
+                    // Codec em estado Released (morreu ou foi liberado por outro fluxo):
+                    // descarta o codec; o proximo feed com CSD reconfigura do zero.
+                    Log.e(TAG, "MediaCodec em estado invalido, liberando para reconfigurar", e)
+                    releaseCodec()
+                }
+            }
+        }
+    }
+
+    private fun runDecodeCycle(c: MediaCodec, info: MediaCodec.BufferInfo) {
+        cycle@ while (true) {
+            val inIndex = c.dequeueInputBuffer(10_000)
+            if (inIndex >= 0) {
+                val item = queue.pollFirst()
+                val input = c.getInputBuffer(inIndex)
+                if (input != null) {
+                    input.clear()
+                    if (item != null) {
+                        input.put(item.first)
+                        c.queueInputBuffer(inIndex, 0, item.first.size, item.second, 0)
+                    } else {
+                        c.queueInputBuffer(inIndex, 0, 0, 0, 0)
                     }
                 }
-                while (true) {
-                    val outIndex = runCatching { c.dequeueOutputBuffer(info, 0) }.getOrDefault(-2)
-                    if (outIndex >= 0) {
+            }
+            while (true) {
+                val outIndex = c.dequeueOutputBuffer(info, 0)
+                when {
+                    outIndex >= 0 -> {
                         if (firstFrame) {
                             Log.i(TAG, "primeiro frame decodificado")
                             firstFrame = false
                         }
                         runCatching { c.releaseOutputBuffer(outIndex, true) }
-                    } else if (outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                        Log.i(TAG, "formato de saida: ${c.outputFormat}")
-                    } else {
-                        break
                     }
+                    outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                        runCatching { c.outputFormat }.getOrNull()
+                            ?.let { Log.i(TAG, "formato de saida: $it") }
+                    }
+                    else -> break@cycle
                 }
             }
         }

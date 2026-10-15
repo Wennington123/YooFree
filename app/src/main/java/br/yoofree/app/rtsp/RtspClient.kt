@@ -68,13 +68,26 @@ class RtspClient(
             output = s.getOutputStream()
             s.soTimeout = 5000
 
-            val setup = request(
-                "SETUP $baseUrl/track1 RTSP/1.0",
-                listOf("Transport: RTP/AVP/TCP;unicast;interleaved=0-1", "User-Agent: $UA")
-            )
-            Log.i(TAG, "SETUP -> " + setup.replace("\r\n", " | "))
-            if (!setup.contains(" 200 ")) fail("SETUP", setup)
-            session = Regex("Session:\\s*([0-9a-zA-Z]+)").find(setup)?.groupValues?.get(1).orEmpty()
+            // Firmwares variam o alvo aceito pelo SETUP; alguns (com firmware
+            // atualizado) respondem 405 Method Not Allowed para /track1.
+            // Tentamos os URIs conhecidos das cameras Yoosee/GW ate obter 200.
+            var setupCode = 0
+            var setupResponse = ""
+            val setupTargets = listOf("$baseUrl/track1", "$baseUrl", "rtsp://$host/media/video1")
+            for (target in setupTargets) {
+                val resp = request(
+                    "SETUP $target RTSP/1.0",
+                    listOf("Transport: RTP/AVP/TCP;unicast;interleaved=0-1", "User-Agent: $UA")
+                )
+                Log.i(TAG, "SETUP $target -> " + resp.replace("\r\n", " | "))
+                setupResponse = resp
+                setupCode = Regex("RTSP/\\d\\.\\d (\\d{3})").find(resp)
+                    ?.groupValues?.get(1)?.toIntOrNull() ?: -1
+                if (setupCode == 200) break
+                if (setupCode !in 400..499) fail("SETUP $target", resp)
+            }
+            if (setupCode != 200) fail("SETUP", setupResponse)
+            session = Regex("Session:\\s*([0-9a-zA-Z]+)").find(setupResponse)?.groupValues?.get(1).orEmpty()
 
             // A camera pode nao devolver resposta textual ao PLAY e comecar a mandar
             // frames na hora. Nao exigimos a resposta: o streamLoop trata os dois casos.
