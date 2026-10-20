@@ -2,6 +2,7 @@ package br.yoofree.app
 
 import android.content.Context
 import android.view.Surface
+import br.yoofree.app.media.AudioPlayer
 import br.yoofree.app.media.Mp4Muxer
 import br.yoofree.app.media.VideoDecoder
 import br.yoofree.app.rtsp.RtspClient
@@ -10,7 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** Junta cliente RTSP + decoder + muxer MP4 numa sessao so. */
+/** Junta cliente RTSP + decoder + audio + muxer MP4 numa sessao so. */
 class CameraSession(
     private val context: Context,
     private val host: String,
@@ -19,6 +20,7 @@ class CameraSession(
 
     private val client = RtspClient(host, listener = this)
     private val decoder = VideoDecoder { onState("Erro: $it") }
+    private val audio = AudioPlayer()
     private var muxer: Mp4Muxer? = null
     @Volatile private var sawError = false
 
@@ -37,13 +39,27 @@ class CameraSession(
         client.stop()
         stopRecording()
         decoder.stop()
+        audio.release()
     }
 
     fun setSurface(surface: Surface?) {
         decoder.setSurface(surface)
     }
 
+    fun setAudioEnabled(enabled: Boolean) {
+        audio.enabled = enabled
+        if (!enabled) audio.release()
+    }
+
     fun ptz(command: String) = client.sendPtz(command)
+
+    override fun onAudio(payload: ByteArray, payloadType: Int, rtpTimestamp: Long) {
+        audio.feed(payload, payloadType, rtpTimestamp)
+    }
+
+    override fun onPtzResult(code: Int) {
+        if (code >= 400) onState("PTZ recusado pela camera ($code)")
+    }
 
     fun isRecording(): Boolean = muxer != null
 

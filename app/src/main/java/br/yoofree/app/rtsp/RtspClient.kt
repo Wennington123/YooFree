@@ -25,12 +25,20 @@ class RtspClient(
         fun onAccessUnit(nals: List<ByteArray>, ptsUs: Long)
         fun onError(message: String, cause: Throwable?)
         fun onDisconnected()
+
+        /** Payload RTP de audio (G.711 etc). payloadType segue a RFC 3551. */
+        fun onAudio(payload: ByteArray, payloadType: Int, rtpTimestamp: Long) {}
+
+        /** Codigo RTSP da resposta ao ultimo PTZ (200 = aceito). */
+        fun onPtzResult(code: Int) {}
     }
 
     companion object {
         const val TAG = "YooFree-RTSP"
         private const val UA = "LibVLC/2.2.6 (LIVE555 Streaming Media v2016.02.22)"
         private const val RTP_CLOCK = 90_000L
+        private const val PT_PCMU = 0
+        private const val PT_PCMA = 8
     }
 
     @Volatile private var running = false
@@ -40,6 +48,8 @@ class RtspClient(
     private var output: OutputStream? = null
     @Volatile private var session = ""
     private var cseq = 0
+    @Volatile private var lastRequestCseq = -1
+    @Volatile private var lastPtzCseq = -1
     private var depacketizer = HevcDepacketizer()
     private var firstTs = -1L
     private var auCount = 0
@@ -89,6 +99,20 @@ class RtspClient(
             if (setupCode != 200) fail("SETUP", setupResponse)
             session = Regex("Session:\\s*([0-9a-zA-Z]+)").find(setupResponse)?.groupValues?.get(1).orEmpty()
 
+            // Audio: algumas cameras expoem uma trilha propria em track2.
+            // Se nao existir (405/400), o audio provavelmente vem multiplexado
+            // no canal do video e o handleRtp cuida dele.
+            runCatching {
+                val audioResp = request(
+                    "SETUP $baseUrl/track2 RTSP/1.0",
+                    listOf("Transport: RTP/AVP/TCP;unicast;interleaved=2-3", "User-Agent: $UA")
+                )
+                Log.i(TAG, "SETUP audio -> " + audioResp.replace("\r\n", " | "))
+                val code = Regex("RTSP/\\d\\.\\d (\\d{3})").find(audioResp)
+                    ?.groupValues?.get(1)?.toIntOrNull() ?: -1
+                if (code == 200) Log.i(TAG, "trilha de audio separada disponivel")
+            }.onFailure { Log.i(TAG, "sem trilha de audio separada: ${it.message}") }
+
             // A camera pode nao devolver resposta textual ao PLAY e comecar a mandar
             // frames na hora. Nao exigimos a resposta: o streamLoop trata os dois casos.
             request("PLAY $baseUrl RTSP/1.0", listOf("User-Agent: $UA"), readResponse = false)
@@ -116,6 +140,9 @@ class RtspClient(
     private fun request(line: String, headers: List<String>, readResponse: Boolean = true): String {
         synchronized(writeLock) {
             cseq += 1
+            lastRequestCseq = cseq
+            // Guarda o CSeq do PTZ para o streamLoop reconhecer a resposta.
+            if (line.startsWith("SET_PARAMETER")) lastPtzCseq = cseq
             val sb = StringBuilder()
             sb.append(line).append("\r\n")
             sb.append("CSeq: ").append(cseq).append("\r\n")
@@ -169,7 +196,8 @@ class RtspClient(
                     val channel = data[off + 1].toInt() and 0xFF
                     val len = ((data[off + 2].toInt() and 0xFF) shl 8) or (data[off + 3].toInt() and 0xFF)
                     if (off + 4 + len > data.size) break // frame incompleto
-                    if (channel == 0) handleRtp(data, off + 4, len)
+                    // canal 0 = video; canal 2 = audio (quando a camera separa a trilha)
+                    if (channel == 0 || channel == 2) handleRtp(data, off + 4, len)
                     off += 4 + len
                 } else {
                     // resposta RTSP textual (ex.: do PLAY), pula ate o fim do cabecalho
@@ -180,7 +208,12 @@ class RtspClient(
                     Log.i(TAG, "resp -> " + text.replace("\r\n", " | "))
                     val code = Regex("RTSP/\\d\\.\\d (\\d{3})").find(firstLine)
                         ?.groupValues?.get(1)?.toIntOrNull()
-                    if (code != null && code >= 400) {
+                    val respCseq = Regex("CSeq:\\s*(\\d+)", RegexOption.IGNORE_CASE).find(text)
+                        ?.groupValues?.get(1)?.toIntOrNull()
+                    if (code != null && respCseq != null && respCseq == lastPtzCseq) {
+                        // Resposta de um SET_PARAMETER de PTZ: informa sem derrubar o stream.
+                        listener.onPtzResult(code)
+                    } else if (code != null && code >= 400) {
                         throw RuntimeException("camera respondeu: $firstLine")
                     }
                     off = end
@@ -198,6 +231,7 @@ class RtspClient(
         val hasExt = (b0 and 0x10) != 0
         val b1 = data[off + 1].toInt() and 0xFF
         val marker = (b1 and 0x80) != 0
+        val payloadType = b1 and 0x7F
 
         val ts = ((data[off + 4].toLong() and 0xFF) shl 24) or
                  ((data[off + 5].toLong() and 0xFF) shl 16) or
@@ -215,6 +249,13 @@ class RtspClient(
 
         val payloadLen = len - headerLen
         val payload = data.copyOfRange(off + headerLen, off + len)
+
+        // G.711 (PCMA/PCMU): audio veio multiplexado no mesmo canal RTP do video.
+        if (payloadType == PT_PCMU || payloadType == PT_PCMA) {
+            listener.onAudio(payload, payloadType, ts)
+            return
+        }
+
         val unit = depacketizer.onRtpPayload(payload, payloadLen, marker, ts) ?: return
         if (auCount++ == 0) Log.i(TAG, "primeiro access unit recebido (${unit.nals.size} NALs)")
 
@@ -242,7 +283,7 @@ class RtspClient(
 
     /**
      * PTZ pela MESMA sessao do stream (a camera aceita poucas sessoes simultaneas).
-     * A resposta chega pelo streamLoop e e apenas registrada.
+     * A resposta chega pelo streamLoop e e reportada em onPtzResult.
      */
     fun sendPtz(command: String) {
         if (!running) {

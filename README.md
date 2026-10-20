@@ -20,7 +20,7 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Como instalar |
 |---|---|---|
-| **Android** 7+ | `app-debug.apk` (v0.5) | baixe na aba [Releases](../../releases) e instale |
+| **Android** 7+ | `app-debug.apk` (v0.6) | baixe na aba [Releases](../../releases) e instale |
 | **Linux** (qualquer distro) | `yoofree-desktop.tar.gz` | um comando (veja abaixo) |
 | **Windows** 10/11 (x64) | `YooFree-Setup-x64.exe` | instalador (com atalhos e desinstalador) |
 | **Windows** 10/11 (ARM64) | `YooFree-Setup-arm64.exe` | instalador (com atalhos e desinstalador) |
@@ -38,6 +38,14 @@ Todas as versões fazem a mesma coisa:
 E o Android ainda tem **modo paisagem** (vira o celular e o vídeo ocupa a tela toda).
 
 ---
+
+## Novidades da v0.6
+
+- 🔊 **Som da câmera**: áudio G.711 (A-law/µ-law) tocado no app, com taxa
+  adaptativa (8 ou 16 kHz, inferida pelo timestamp RTP) e botão `♪` pra
+  ligar/desligar
+- 🕹️ **PTZ verificado**: o app agora lê a resposta do `SET_PARAMETER` e avisa
+  quando a câmera recusa o comando (antes a resposta era ignorada)
 
 ## Novidades da v0.5
 
@@ -162,8 +170,9 @@ Não. O YooFree usa o RTSP local, que nessa linha não exige autenticação para
 Não. A conexão é direta (`IP:554`), na sua rede local.
 
 **Funciona fora de casa?**
-Não por enquanto — acesso remoto está nos planos (veja abaixo). Enquanto isso,
-use uma VPN (WireGuard/Tailscale) e mantenha o aparelho na VPN.
+Ainda não direto pelo app — o estudo está em
+[docs/research/RESEARCH-REMOTE-ACCESS.md](docs/research/RESEARCH-REMOTE-ACCESS.md).
+Por enquanto use uma VPN (WireGuard/Tailscale) com a câmera na rede local.
 
 **Por que um cliente RTSP próprio?**
 Porque essas câmeras **não falam RTSP padrão**: o `DESCRIBE` responde
@@ -188,17 +197,17 @@ simultâneas). Suporte a múltiplas câmeras está nos planos.
 Ideias que estão no radar, em ordem de prioridade — sugestões novas são bem-vindas
 nas [issues](../../issues):
 
-- 🔊 **Recepção de som**: ouvir o áudio da câmera no app (o RTP da câmera já
-  carrega a trilha de áudio; falta depacketizar e tocar)
-- 🏃 **Eventos de movimento via RTSP**: receber/verificar os eventos de
-  movimento que a própria câmera reporta, em vez de analisar imagem no aparelho
+- 🏃 **Eventos de movimento via RTSP/ONVIF**: receber os eventos de movimento que
+  a própria câmera reporta (no firmware testado o serviço de Events da ONVIF é
+  anunciado mas não responde; precisa de captura em hardware pra confirmar)
 - 🕹️ **PTZ à prova de câmera**: mover o controle PTZ do canal RTSP para o
   protocolo nativo das câmeras dessa linha (DVRIP/XMeye, porta 34567 — o mesmo
   caminho que os apps oficiais usam), com fallback pro meio atual. Já temos o
   estudo pronto em [docs/research/RESEARCH-PTZ.md](docs/research/RESEARCH-PTZ.md)
-- 🌐 **Acessar fora do Wi‑Fi local**: o cliente YooFree sem depender de VPN —
-  pela sua própria nuvem (protocolo P2P das câmeras) ou por túnel embutido;
-  é a funcionalidade mais pedida depois do PTZ
+- 🌐 **Acessar fora do Wi‑Fi local**: **estudo concluído** — por enquanto a rota
+  confiável é VPN (veja [docs/research/RESEARCH-REMOTE-ACCESS.md](docs/research/RESEARCH-REMOTE-ACCESS.md);
+  P2P do fabricante é token-gated e não dá pra reimplementar). Túnel embutido no
+  app é a evolução possível a médio prazo
 - 🎛️ **Direções PTZ normalizadas**: inverter esquerda/direita e cima/baixo
   automaticamente quando a câmera está montada de cabeça pra baixo (como o app
   oficial faz)

@@ -24,6 +24,7 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
     var rotation by mutableStateOf(0)
     var scanning by mutableStateOf(false)
     var foundHosts by mutableStateOf(listOf<String>())
+    var audioOn by mutableStateOf(true)
 
     private var scanner: LanScanner? = null
     private val main = Handler(Looper.getMainLooper())
@@ -49,6 +50,7 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
             session = s
             // O Surface do TextureView normalmente ja existe antes de conectar.
             s.setSurface(currentSurface)
+            s.setAudioEnabled(audioOn)
             s.connect()
             connected = true
         }
@@ -61,6 +63,11 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
 
     fun ptz(command: String) {
         session?.ptz(command)
+    }
+
+    fun toggleAudio() {
+        audioOn = !audioOn
+        session?.setAudioEnabled(audioOn)
     }
 
     fun zoomBy(delta: Float) {

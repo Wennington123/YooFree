@@ -157,6 +157,13 @@ private fun LandscapeScreen(
                                 onClick = { vm.toggleRecording() },
                             )
                             RoundButton(
+                                glyph = "♪",
+                                description = if (vm.audioOn) "Desligar som" else "Ligar som",
+                                size = 44.dp,
+                                content = if (vm.audioOn) Accent else TextLow,
+                                onClick = { vm.toggleAudio() },
+                            )
+                            RoundButton(
                                 glyph = "⟳",
                                 description = "Girar imagem",
                                 size = 44.dp,
@@ -434,7 +441,7 @@ private fun ControlCard(vm: CameraViewModel) {
             PtzPad(vm, compact = false)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 RoundButton(
                     glyph = if (vm.recording) "■" else "●",
@@ -445,12 +452,21 @@ private fun ControlCard(vm: CameraViewModel) {
                     content = if (vm.recording) Bg else Good,
                     onClick = { vm.toggleRecording() },
                 )
-                RoundButton(
-                    glyph = "⟳",
-                    description = "Girar imagem",
-                    size = 44.dp,
-                    onClick = { vm.cycleRotation() },
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RoundButton(
+                        glyph = "♪",
+                        description = if (vm.audioOn) "Desligar som" else "Ligar som",
+                        size = 44.dp,
+                        content = if (vm.audioOn) Accent else TextLow,
+                        onClick = { vm.toggleAudio() },
+                    )
+                    RoundButton(
+                        glyph = "⟳",
+                        description = "Girar imagem",
+                        size = 44.dp,
+                        onClick = { vm.cycleRotation() },
+                    )
+                }
             }
         }
     }
