@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -182,14 +183,32 @@ private fun App() {
         Text("YooFree", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = vm.host,
-            onValueChange = { vm.host = it },
-            label = { Text("IP da camera") },
-            singleLine = true,
-            enabled = !vm.connected,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = vm.host,
+                onValueChange = { vm.host = it },
+                label = { Text("IP da camera") },
+                singleLine = true,
+                enabled = !vm.connected,
+                modifier = Modifier.weight(1f)
+            )
+            Button(
+                onClick = { vm.scanNetwork() },
+                enabled = !vm.connected,
+                modifier = Modifier.height(56.dp)
+            ) { Text(if (vm.scanning) "Parar" else "Buscar", fontSize = 12.sp) }
+        }
+
+        if (vm.foundHosts.isNotEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            vm.foundHosts.forEach { ip ->
+                OutlinedButton(
+                    onClick = { vm.host = ip },
+                    enabled = !vm.connected,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                ) { Text("Camera em $ip", fontSize = 13.sp) }
+            }
+        }
 
         Spacer(Modifier.height(10.dp))
 

@@ -20,7 +20,7 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Como instalar |
 |---|---|---|
-| **Android** 7+ | `app-debug.apk` (v0.2) | baixe na aba [Releases](../../releases) e instale |
+| **Android** 7+ | `app-debug.apk` (v0.3) | baixe na aba [Releases](../../releases) e instale |
 | **Linux** (qualquer distro) | `yoofree-desktop.tar.gz` | um comando (veja abaixo) |
 | **Windows** 10/11 (x64) | `YooFree-Setup-x64.exe` | instalador (com atalhos e desinstalador) |
 | **Windows** 10/11 (ARM64) | `YooFree-Setup-arm64.exe` | instalador (com atalhos e desinstalador) |
@@ -39,6 +39,13 @@ E o Android ainda tem **modo paisagem** (vira o celular e o vídeo ocupa a tela 
 
 ---
 
+## Novidades da v0.3
+
+- 🔎 **Busca automática de câmera na rede**: um botão **Buscar** encontra as
+  câmeras RTSP do seu Wi‑Fi (varre a /24 local na porta 554 e confirma o
+  handshake RTSP) — não precisa mais descobrir o IP no roteador
+- A lista de câmeras encontradas aparece no app; toque no IP pra preencher
+
 ## Novidades da v0.2
 
 - 🛠️ **Correção do crash ao Conectar** em alguns aparelhos (ex.: Redmi Note 12S,
@@ -52,7 +59,8 @@ E o Android ainda tem **modo paisagem** (vira o celular e o vídeo ocupa a tela 
 
 1. Baixe o APK da versão atual na aba [Releases](../../releases).
 2. Autorize "instalar de fontes desconhecidas" quando o Android pedir.
-3. Abra o app, digite o **IP da câmera** (ex.: `192.168.1.2`) e toque em **Conectar**.
+3. Abra o app, toque em **Buscar** para achar a câmera na sua rede (ou digite o
+   **IP da câmera**, ex.: `192.168.1.2`) e toque em **Conectar**.
 4. **PTZ** pelas setas, **zoom** no `−`/`+`, **girar** no botão, **gravar** no botão.
    Os vídeos ficam em `Android/data/br.yoofree.app/files/YooFree/`.
 
@@ -115,6 +123,11 @@ Pra saber sua arquitetura: **Configurações → Sistema → Sobre** (procure
 ---
 
 ## Como descobrir o IP da câmera
+
+O jeito mais fácil: **toque em `Buscar`** no app — ele varre o seu Wi‑Fi e lista
+as câmeras encontradas.
+
+Se preferir na mão:
 
 1. Configure a câmera normalmente no app oficial da Yoosee.
 2. Veja os dispositivos conectados no seu roteador — a câmera aparece com um IP
@@ -209,6 +222,7 @@ Em breve — apoio internacional via cartão, pra quem não tem Pix.
 
 ```
 app/          versão Android (Kotlin + Compose)
+  .../net/        busca de câmeras na rede local (LanScanner)
 desktop/      versões Linux e Windows (Python + PySide6)
   yoofree/
     rtsp.py       cliente RTSP mínimo (SETUP/PLAY + PTZ)
