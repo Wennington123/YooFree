@@ -1,11 +1,7 @@
 name: desktop-windows
 
+# Desativado: foco atual e Android. Roda apenas manualmente (workflow_dispatch).
 on:
-  push:
-    paths:
-      - 'desktop/**'
-      - 'assets/icon.ico'
-      - '.github/workflows/desktop-windows.yml'
   workflow_dispatch:
 
 permissions:

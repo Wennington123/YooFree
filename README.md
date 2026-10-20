@@ -1,7 +1,7 @@
 # YooFree
 
 Cliente **aberto e sem anúncios** para câmeras **Yoosee / GW (Gwell)**, para
-**Android, Linux e Windows**.
+**Android**.
 
 Fala direto com a câmera na sua rede local: **sem nuvem, sem conta, sem IA,
 sem telemetria**. Só você e a sua câmera.
@@ -23,11 +23,6 @@ sem telemetria**. Só você e a sua câmera.
 | Plataforma | Pacote | Como instalar |
 |---|---|---|
 | **Android** 7+ | `YooFree-0.7.apk` (assinado) | baixe na aba [Releases](../../releases) e instale |
-| **Linux** (qualquer distro) | `yoofree-desktop.tar.gz` | um comando (veja abaixo) |
-| **Windows** 10/11 (x64) | `YooFree-Setup-x64.exe` | instalador (com atalhos e desinstalador) |
-| **Windows** 10/11 (ARM64) | `YooFree-Setup-arm64.exe` | instalador (com atalhos e desinstalador) |
-
-Também tem as versões **portáteis** (`.zip`), pra quem não quer instalar.
 
 Todas as versões fazem a mesma coisa:
 
@@ -98,60 +93,6 @@ O celular precisa estar no **mesmo Wi‑Fi** da câmera.
 
 ---
 
-## Linux
-
-Instalação por comando, em qualquer distro:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Wennington123/YooFree/main/desktop/packaging/install.sh | bash
-```
-
-O instalador:
-- confere as dependências e **detecta o gerenciador de pacotes**
-  (pacman, apt, dnf, zypper, apk, xbps, emerge)
-- instala em `~/.local` (o app não precisa de root)
-- cria o comando **`yoofree`** e um atalho no menu
-
-Depois é só:
-
-```bash
-yoofree                       # abre a janela
-yoofree --host 192.168.1.2    # já conecta na câmera
-```
-
-Os vídeos vão para `~/Videos/YooFree/`. Detalhes em
-[desktop/README.md](desktop/README.md).
-
----
-
-## Windows 10 / 11
-
-Escolha a versão da sua máquina:
-
-- **x64** (Intel/AMD): `YooFree-Setup-x64.exe`
-- **ARM64** (Snapdragon, Surface Pro X, notebooks ARM): `YooFree-Setup-arm64.exe`
-
-**Instalador** (recomendado):
-
-1. Baixe o `YooFree-Setup-<arch>.exe` na aba [Releases](../../releases).
-2. Rode o instalador — ele cria atalho no Menu Iniciar (e opcionalmente na
-   Área de Trabalho), com ícone, e tem desinstalador normal pelo Painel de Controle.
-3. Não precisa de admin (dá pra instalar só pro seu usuário).
-
-**Portátil** (sem instalar): baixe `YooFree-windows-<arch>.zip`, descompacte e
-rode `YooFree.exe`. Não escreve nada no registro.
-
-> Na primeira execução o Windows pode mostrar o aviso azul do SmartScreen
-> ("Windows protegeu o seu PC"), porque o executável não tem assinatura paga.
-> Clique em **Mais informações → Executar assim mesmo**.
->
-> Os vídeos vão para `%USERPROFILE%\Videos\YooFree\`.
-
-Pra saber sua arquitetura: **Configurações → Sistema → Sobre** (procure
-"Tipo de sistema").
-
----
-
 ## Como descobrir o IP da câmera
 
 O jeito mais fácil: **toque em `Buscar`** no app — ele varre o seu Wi‑Fi e lista
@@ -192,7 +133,6 @@ depacketiza o HEVC na mão.
 **Por que o Android não usa o MediaMuxer?**
 Porque em vários aparelhos (ex.: Samsung) o `MediaMuxer` **crasha nativamente**
 com HEVC. O YooFree tem um **muxer MP4 próprio**, que escreve os boxes na mão.
-Essa mesma lógica é usada no Linux e no Windows.
 
 **Posso usar em mais de uma câmera?**
 Hoje conecta em uma por vez (essas câmeras costumam aceitar poucas sessões RTSP
@@ -256,23 +196,15 @@ Em breve — apoio internacional via cartão, pra quem não tem Pix.
 ## Estrutura do repositório
 
 ```
-app/          versão Android (Kotlin + Compose)
+app/          app Android (Kotlin + Compose)
+  .../media/      decoder HEVC, áudio G.711, muxer MP4
   .../net/        busca de câmeras na rede local (LanScanner)
-desktop/      versões Linux e Windows (Python + PySide6)
-  yoofree/
-    rtsp.py       cliente RTSP mínimo (SETUP/PLAY + PTZ)
-    hevc.py       depacketizer RTP -> HEVC
-    muxer.py      muxer MP4 próprio
-    player.py     escolhe o backend de vídeo
-    player_gst.py backend GStreamer (Linux)
-    player_av.py  backend PyAV/FFmpeg (Windows)
-    ui.py         interface (PySide6)
-  packaging/  instalador universal e build dos pacotes
+  .../ui/         tema e telas (Compose)
 assets/       ícone (SVG) + QR do Pix
 site/         página oficial (GitHub Pages)
 docs/         pesquisa de protocolo (engenharia reversa dos apps oficiais)
 scripts/      toolchain Android local
-.github/      workflows (APK assinado, Pages, Windows)
+.github/      workflows (APK assinado e Pages)
 ```
 
 ---
@@ -288,16 +220,8 @@ source scripts/env.sh
 ./gradlew assembleDebug           # ou assembleRelease
 ```
 
-**Linux / Windows** (Python 3.9+):
-
-```bash
-cd desktop
-pip install -r requirements.txt   # PySide6 + av
-python3 main.py --host 192.168.1.2
-```
-
-O APK oficial (assinado) e o instalador do Windows são gerados pelo GitHub
-Actions (`.github/workflows/build.yml`, `desktop-windows.yml` e `pages.yml`).
+O APK oficial (assinado) é gerado pelo GitHub Actions
+(`.github/workflows/build.yml`); o site, por `pages.yml`.
 
 Para assinar localmente, coloque no `local.properties` (fora do git):
 
