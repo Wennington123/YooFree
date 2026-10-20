@@ -69,7 +69,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          gh release create "$RELEASE_TAG" "$APK_PATH#YooFree-${RELEASE_TAG#v}.apk" \
+          NAME="YooFree-${RELEASE_TAG#v}.apk"
+          cp "$APK_PATH" "$NAME"
+          gh release create "$RELEASE_TAG" "$NAME" \
             --target "$GITHUB_SHA" \
             --title "YooFree ${RELEASE_TAG#v}" \
             --notes "APK Android ${RELEASE_TAG} (assinado) gerado pelo workflow build, commit ${GITHUB_SHA:0:7}."
