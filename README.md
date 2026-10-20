@@ -14,13 +14,15 @@ sem telemetria**. Só você e a sua câmera.
 [![Release](https://img.shields.io/github/v/release/Wennington123/YooFree)](../../releases)
 [![Build](https://github.com/Wennington123/YooFree/actions/workflows/build.yml/badge.svg)](../../actions)
 
+🌐 **Site oficial:** https://wennington123.github.io/YooFree/
+
 ---
 
 ## Versões
 
 | Plataforma | Pacote | Como instalar |
 |---|---|---|
-| **Android** 7+ | `app-debug.apk` (v0.6) | baixe na aba [Releases](../../releases) e instale |
+| **Android** 7+ | `YooFree-0.7.apk` (assinado) | baixe na aba [Releases](../../releases) e instale |
 | **Linux** (qualquer distro) | `yoofree-desktop.tar.gz` | um comando (veja abaixo) |
 | **Windows** 10/11 (x64) | `YooFree-Setup-x64.exe` | instalador (com atalhos e desinstalador) |
 | **Windows** 10/11 (ARM64) | `YooFree-Setup-arm64.exe` | instalador (com atalhos e desinstalador) |
@@ -35,9 +37,15 @@ Todas as versões fazem a mesma coisa:
 - 🎥 **Gravação local** em MP4 (sem re-encode, sem nuvem)
 - 🔄 **Girar** a imagem em 90° (útil se a câmera estiver "de cabeça pra baixo")
 
-E o Android ainda tem **modo paisagem** (vira o celular e o vídeo ocupa a tela toda).
+E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede.
 
 ---
+
+## Novidades da v0.7
+
+- ✍️ **Build oficial assinado**: o APK agora sai assinado com chave de release
+  (antes era debug), gerado pelo GitHub Actions
+- 🌐 **Site oficial**: https://wennington123.github.io/YooFree/
 
 ## Novidades da v0.6
 
@@ -261,9 +269,10 @@ desktop/      versões Linux e Windows (Python + PySide6)
     ui.py         interface (PySide6)
   packaging/  instalador universal e build dos pacotes
 assets/       ícone (SVG) + QR do Pix
+site/         página oficial (GitHub Pages)
 docs/         pesquisa de protocolo (engenharia reversa dos apps oficiais)
 scripts/      toolchain Android local
-.github/      workflows (APK, Windows)
+.github/      workflows (APK assinado, Pages, Windows)
 ```
 
 ---
@@ -287,8 +296,21 @@ pip install -r requirements.txt   # PySide6 + av
 python3 main.py --host 192.168.1.2
 ```
 
-O APK e o instalador do Windows são gerados pelo GitHub Actions
-(`.github/workflows/build.yml` e `desktop-windows.yml`).
+O APK oficial (assinado) e o instalador do Windows são gerados pelo GitHub
+Actions (`.github/workflows/build.yml`, `desktop-windows.yml` e `pages.yml`).
+
+Para assinar localmente, coloque no `local.properties` (fora do git):
+
+```
+YOOFREE_STORE_FILE=/caminho/keystore.jks
+YOOFREE_STORE_PASSWORD=...
+YOOFREE_KEY_ALIAS=yoofree
+YOOFREE_KEY_PASSWORD=...
+```
+
+No CI, os mesmos valores vêm de secrets (`YOOFREE_KEYSTORE_BASE64`,
+`YOOFREE_STORE_PASSWORD`, `YOOFREE_KEY_ALIAS`, `YOOFREE_KEY_PASSWORD`) e o build
+cai para debug se eles não existirem.
 
 ---
 

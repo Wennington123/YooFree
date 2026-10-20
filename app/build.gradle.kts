@@ -6,12 +6,21 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// Config de assinatura lida de local.properties (que NAO vai pro git).
+// Config de assinatura: local.properties (local) ou variaveis de ambiente (CI).
+// O keystore NUNCA vai pro git.
 val signingProps = Properties().apply {
     val f = rootProject.file("local.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
-val hasReleaseKey = signingProps.getProperty("YOOFREE_STORE_FILE") != null
+
+fun signingValue(name: String): String? =
+    System.getenv(name)?.takeIf { it.isNotBlank() } ?: signingProps.getProperty(name)
+
+val releaseStoreFile = signingValue("YOOFREE_STORE_FILE")
+val releaseStorePassword = signingValue("YOOFREE_STORE_PASSWORD")
+val releaseKeyAlias = signingValue("YOOFREE_KEY_ALIAS")
+val releaseKeyPassword = signingValue("YOOFREE_KEY_PASSWORD")
+val hasReleaseKey = !releaseStoreFile.isNullOrBlank()
 
 android {
     namespace = "br.yoofree.app"
@@ -21,17 +30,17 @@ android {
         applicationId = "br.yoofree.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 6
-        versionName = "0.6"
+        versionCode = 7
+        versionName = "0.7"
     }
 
     signingConfigs {
         if (hasReleaseKey) {
             create("release") {
-                storeFile = file(signingProps.getProperty("YOOFREE_STORE_FILE"))
-                storePassword = signingProps.getProperty("YOOFREE_STORE_PASSWORD")
-                keyAlias = signingProps.getProperty("YOOFREE_KEY_ALIAS")
-                keyPassword = signingProps.getProperty("YOOFREE_KEY_PASSWORD")
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
             }
         }
     }

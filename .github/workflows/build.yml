@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Tag da release (ex.: v0.5). Vazio = apenas builda o APK.'
+        description: 'Tag da release (ex.: v0.7). Vazio = apenas builda o APK.'
         required: false
         default: ''
 
@@ -33,14 +33,34 @@ jobs:
           sdkmanager "platforms;android-34" "build-tools;34.0.0" >/dev/null 2>&1 || true
           echo "ANDROID_HOME=$ANDROID_HOME"
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Prepare signing key
+        env:
+          YOOFREE_KEYSTORE_BASE64: ${{ secrets.YOOFREE_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$YOOFREE_KEYSTORE_BASE64" ]; then
+            echo "$YOOFREE_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/yoofree-release.jks"
+            echo "YOOFREE_STORE_FILE=$RUNNER_TEMP/yoofree-release.jks" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build APK
+        env:
+          YOOFREE_STORE_PASSWORD: ${{ secrets.YOOFREE_STORE_PASSWORD }}
+          YOOFREE_KEY_ALIAS: ${{ secrets.YOOFREE_KEY_ALIAS }}
+          YOOFREE_KEY_PASSWORD: ${{ secrets.YOOFREE_KEY_PASSWORD }}
+        run: |
+          if [ -n "$YOOFREE_STORE_FILE" ]; then
+            ./gradlew assembleRelease --no-daemon --stacktrace
+            echo "APK_PATH=app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_ENV"
+          else
+            ./gradlew assembleDebug --no-daemon --stacktrace
+            echo "APK_PATH=app/build/outputs/apk/debug/app-debug.apk" >> "$GITHUB_ENV"
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: yoofree-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: yoofree-apk
+          path: app/build/outputs/apk/**/*.apk
           if-no-files-found: error
 
       - name: Publish APK to release
@@ -49,7 +69,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          gh release create "$RELEASE_TAG" app/build/outputs/apk/debug/app-debug.apk \
+          gh release create "$RELEASE_TAG" "$APK_PATH#YooFree-${RELEASE_TAG#v}.apk" \
             --target "$GITHUB_SHA" \
             --title "YooFree ${RELEASE_TAG#v}" \
-            --notes "APK Android ${RELEASE_TAG} gerado pelo workflow build (commit ${GITHUB_SHA:0:7})."
+            --notes "APK Android ${RELEASE_TAG} (assinado) gerado pelo workflow build, commit ${GITHUB_SHA:0:7}."
