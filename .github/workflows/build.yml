@@ -5,9 +5,14 @@ on:
     branches: [ main ]
   pull_request:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag da release (ex.: v0.5). Vazio = apenas builda o APK.'
+        required: false
+        default: ''
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   apk:
@@ -37,3 +42,14 @@ jobs:
           name: yoofree-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+      - name: Publish APK to release
+        if: inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          gh release create "$RELEASE_TAG" app/build/outputs/apk/debug/app-debug.apk \
+            --target "$GITHUB_SHA" \
+            --title "YooFree ${RELEASE_TAG#v}" \
+            --notes "APK Android ${RELEASE_TAG} gerado pelo workflow build (commit ${GITHUB_SHA:0:7})."
