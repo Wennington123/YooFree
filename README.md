@@ -188,6 +188,10 @@ simultâneas). Suporte a múltiplas câmeras está nos planos.
 Ideias que estão no radar, em ordem de prioridade — sugestões novas são bem-vindas
 nas [issues](../../issues):
 
+- 🔊 **Recepção de som**: ouvir o áudio da câmera no app (o RTP da câmera já
+  carrega a trilha de áudio; falta depacketizar e tocar)
+- 🏃 **Eventos de movimento via RTSP**: receber/verificar os eventos de
+  movimento que a própria câmera reporta, em vez de analisar imagem no aparelho
 - 🕹️ **PTZ à prova de câmera**: mover o controle PTZ do canal RTSP para o
   protocolo nativo das câmeras dessa linha (DVRIP/XMeye, porta 34567 — o mesmo
   caminho que os apps oficiais usam), com fallback pro meio atual. Já temos o
