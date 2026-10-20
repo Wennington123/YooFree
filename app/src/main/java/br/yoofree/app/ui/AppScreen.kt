@@ -13,6 +13,8 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -114,52 +117,69 @@ private fun LandscapeScreen(
     prefs: android.content.SharedPreferences,
 ) {
     var surfaceReady by remember { mutableStateOf(false) }
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+    var hudVisible by remember { mutableStateOf(true) }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .pointerInput(Unit) {
+                detectTapGestures { hudVisible = !hudVisible }
+            }
+    ) {
         VideoSurface(vm, Modifier.fillMaxSize()) { surfaceReady = it }
-        Surface(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(12.dp),
-            shape = MaterialTheme.shapes.large,
-            color = Panel.copy(alpha = 0.92f),
+        AnimatedVisibility(
+            visible = hudVisible,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ConnectButton(vm, prefs, surfaceReady, compact = true)
-                        RoundButton(
-                            glyph = if (vm.recording) "■" else "●",
-                            description = if (vm.recording) "Parar gravação" else "Gravar",
-                            enabled = vm.connected,
-                            size = 44.dp,
-                            container = if (vm.recording) Bad else PanelHi,
-                            onClick = { vm.toggleRecording() },
-                        )
-                        RoundButton(
-                            glyph = "⟳",
-                            description = "Girar imagem",
-                            size = 44.dp,
-                            onClick = { vm.cycleRotation() },
-                        )
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                shape = MaterialTheme.shapes.large,
+                color = Panel.copy(alpha = 0.92f),
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            ConnectButton(vm, prefs, surfaceReady, compact = true)
+                            RoundButton(
+                                glyph = if (vm.recording) "■" else "●",
+                                description = if (vm.recording) "Parar gravação" else "Gravar",
+                                enabled = vm.connected,
+                                size = 44.dp,
+                                container = if (vm.recording) Bad else PanelHi,
+                                onClick = { vm.toggleRecording() },
+                            )
+                            RoundButton(
+                                glyph = "⟳",
+                                description = "Girar imagem",
+                                size = 44.dp,
+                                onClick = { vm.cycleRotation() },
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            ZoomStepper(vm, compact = true)
+                            PtzPad(vm, compact = true)
+                        }
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                        ZoomStepper(vm, compact = true)
-                        PtzPad(vm, compact = true)
-                    }
+                    Text(
+                        text = vm.status,
+                        color = TextLow,
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
                 }
-                Text(
-                    text = vm.status,
-                    color = TextLow,
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 6.dp),
-                )
             }
         }
     }
@@ -225,7 +245,12 @@ private fun VideoSurface(
             .clip(RoundedCornerShape(28.dp))
             .background(Color.Black)
             .border(1.dp, Color.White.copy(alpha = 0.06f), RoundedCornerShape(28.dp))
-            .clipToBounds(),
+            .clipToBounds()
+            .pointerInput(vm) {
+                detectTransformGestures { _, _, zoomChange, _ ->
+                    vm.zoomByFactor(zoomChange)
+                }
+            },
         contentAlignment = Alignment.Center,
     ) {
         AndroidView(

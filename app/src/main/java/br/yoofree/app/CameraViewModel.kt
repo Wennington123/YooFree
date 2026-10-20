@@ -67,6 +67,11 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
         zoom = (zoom + delta).coerceIn(1.0f, 5.0f)
     }
 
+    /** Zoom por gesto (pinch): fator multiplicativo, 1.0 = sem mudanca. */
+    fun zoomByFactor(factor: Float) {
+        zoom = (zoom * factor).coerceIn(1.0f, 5.0f)
+    }
+
     fun cycleRotation() {
         rotation = (rotation + 90) % 360
     }

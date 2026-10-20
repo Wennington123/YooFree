@@ -20,7 +20,7 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Como instalar |
 |---|---|---|
-| **Android** 7+ | `app-debug.apk` (v0.4) | baixe na aba [Releases](../../releases) e instale |
+| **Android** 7+ | `app-debug.apk` (v0.5) | baixe na aba [Releases](../../releases) e instale |
 | **Linux** (qualquer distro) | `yoofree-desktop.tar.gz` | um comando (veja abaixo) |
 | **Windows** 10/11 (x64) | `YooFree-Setup-x64.exe` | instalador (com atalhos e desinstalador) |
 | **Windows** 10/11 (ARM64) | `YooFree-Setup-arm64.exe` | instalador (com atalhos e desinstalador) |
@@ -38,6 +38,13 @@ Todas as versões fazem a mesma coisa:
 E o Android ainda tem **modo paisagem** (vira o celular e o vídeo ocupa a tela toda).
 
 ---
+
+## Novidades da v0.5
+
+- 🤏 **Zoom com os dedos (pinch)**: no Android, aproxime/afaste dois dedos sobre o
+  vídeo para dar zoom (1x a 5x), além dos botões `−`/`+`
+- 📺 **Modo paisagem estilo player**: os controles agora são um HUD sobre o
+  vídeo; **toque na tela** para esconder/mostrar
 
 ## Novidades da v0.4
 
