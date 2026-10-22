@@ -54,6 +54,10 @@ class RtspClient(
     private var firstTs = -1L
     private var auCount = 0
 
+    /** Canais intercalados negociados no SETUP (a camera pode devolver outros). */
+    @Volatile private var videoChannel = 0
+    @Volatile private var audioChannel = 2
+
     private val baseUrl get() = "rtsp://$host/$path"
 
     fun start() {
@@ -78,40 +82,68 @@ class RtspClient(
             output = s.getOutputStream()
             s.soTimeout = 5000
 
-            // Firmwares variam o alvo aceito pelo SETUP; alguns (com firmware
-            // atualizado) respondem 405 Method Not Allowed para /track1.
-            // Tentamos os URIs conhecidos das cameras Yoosee/GW ate obter 200.
+            // 1) DESCRIBE: se a camera responder SDP, usamos os tracks reais
+            //    (evita chutar /track1 e tomar 405/404 de firmwares diferentes).
+            var videoUrl: String? = null
+            var audioUrl: String? = null
+            runCatching {
+                val (code, sdp) = describe()
+                Log.i(TAG, "DESCRIBE -> $code")
+                if (code == 200 && sdp.isNotBlank()) {
+                    val tracks = parseSdpTracks(sdp)
+                    videoUrl = tracks.video
+                    audioUrl = tracks.audio
+                    Log.i(TAG, "SDP video=$videoUrl audio=$audioUrl")
+                }
+            }.onFailure { Log.i(TAG, "DESCRIBE indisponivel: ${it.message}") }
+
+            // 2) SETUP do video: tracks do SDP primeiro, depois os alvos conhecidos.
             var setupCode = 0
             var setupResponse = ""
-            val setupTargets = listOf("$baseUrl/track1", "$baseUrl", "rtsp://$host/media/video1")
-            for (target in setupTargets) {
-                val resp = request(
-                    "SETUP $target RTSP/1.0",
-                    listOf("Transport: RTP/AVP/TCP;unicast;interleaved=0-1", "User-Agent: $UA")
-                )
-                Log.i(TAG, "SETUP $target -> " + resp.replace("\r\n", " | "))
-                setupResponse = resp
-                setupCode = Regex("RTSP/\\d\\.\\d (\\d{3})").find(resp)
-                    ?.groupValues?.get(1)?.toIntOrNull() ?: -1
-                if (setupCode == 200) break
-                if (setupCode !in 400..499) fail("SETUP $target", resp)
+            val setupTargets = (listOfNotNull(videoUrl) +
+                listOf("$baseUrl/track1", baseUrl, "rtsp://$host/media/video1")).distinct()
+            val transports = listOf(
+                "RTP/AVP/TCP;unicast;interleaved=0-1",
+                "RTP/AVP/TCP;unicast;interleaved=0-1;mode=\"PLAY\"",
+            )
+            outer@ for (target in setupTargets) {
+                for (transport in transports) {
+                    val resp = request(
+                        "SETUP $target RTSP/1.0",
+                        listOf("Transport: $transport", "User-Agent: $UA")
+                    )
+                    Log.i(TAG, "SETUP $target -> " + resp.replace("\r\n", " | "))
+                    setupResponse = resp
+                    setupCode = statusCode(resp)
+                    if (setupCode == 200) {
+                        interleaved(resp)?.let { (rtp, _) -> videoChannel = rtp }
+                        break@outer
+                    }
+                    // 401/403 nao melhoram tentando outro alvo/transporte.
+                    if (setupCode == 401 || setupCode == 403) break@outer
+                    if (setupCode !in 400..499 && setupCode != 200) fail("SETUP $target", resp)
+                }
             }
             if (setupCode != 200) fail("SETUP", setupResponse)
             session = Regex("Session:\\s*([0-9a-zA-Z]+)").find(setupResponse)?.groupValues?.get(1).orEmpty()
 
-            // Audio: algumas cameras expoem uma trilha propria em track2.
-            // Se nao existir (405/400), o audio provavelmente vem multiplexado
-            // no canal do video e o handleRtp cuida dele.
-            runCatching {
-                val audioResp = request(
-                    "SETUP $baseUrl/track2 RTSP/1.0",
-                    listOf("Transport: RTP/AVP/TCP;unicast;interleaved=2-3", "User-Agent: $UA")
-                )
-                Log.i(TAG, "SETUP audio -> " + audioResp.replace("\r\n", " | "))
-                val code = Regex("RTSP/\\d\\.\\d (\\d{3})").find(audioResp)
-                    ?.groupValues?.get(1)?.toIntOrNull() ?: -1
-                if (code == 200) Log.i(TAG, "trilha de audio separada disponivel")
-            }.onFailure { Log.i(TAG, "sem trilha de audio separada: ${it.message}") }
+            // 3) Audio: trilha do SDP ou /track2. Se nao existir, o audio pode vir
+            //    multiplexado no RTP do video (handleRtp cuida disso).
+            val audioTargets = (listOfNotNull(audioUrl) + "$baseUrl/track2").distinct()
+            for (target in audioTargets) {
+                val audioResp = runCatching {
+                    request(
+                        "SETUP $target RTSP/1.0",
+                        listOf("Transport: RTP/AVP/TCP;unicast;interleaved=2-3", "User-Agent: $UA")
+                    )
+                }.getOrNull() ?: continue
+                Log.i(TAG, "SETUP audio $target -> " + audioResp.replace("\r\n", " | "))
+                if (statusCode(audioResp) == 200) {
+                    interleaved(audioResp)?.let { (rtp, _) -> audioChannel = rtp }
+                    Log.i(TAG, "trilha de audio separada (canal $audioChannel)")
+                    break
+                }
+            }
 
             // A camera pode nao devolver resposta textual ao PLAY e comecar a mandar
             // frames na hora. Nao exigimos a resposta: o streamLoop trata os dois casos.
@@ -133,7 +165,86 @@ class RtspClient(
 
     private fun fail(stage: String, response: String) {
         val first = response.lineSequence().firstOrNull()?.trim().orEmpty()
-        throw RuntimeException("$stage falhou: $first")
+        val hint = when (statusCode(response)) {
+            401, 403 -> " (a camera exige senha no RTSP)"
+            404 -> " (esse URI de SETUP nao existe no firmware)"
+            405 -> " (firmware nao aceita SETUP nesse URI)"
+            501 -> " (firmware nao implementa SETUP)"
+            else -> ""
+        }
+        throw RuntimeException("$stage falhou: $first$hint")
+    }
+
+    private fun statusCode(response: String): Int =
+        Regex("RTSP/\\d\\.\\d (\\d{3})").find(response)
+            ?.groupValues?.get(1)?.toIntOrNull() ?: -1
+
+    private fun responseHeader(response: String, name: String): String? =
+        Regex("(?im)^" + Regex.escape(name) + ":\\s*(.+)$").find(response)
+            ?.groupValues?.get(1)?.trim()
+
+    /** Par RTP/RTCP de canais intercalados devolvido no header Transport. */
+    private fun interleaved(response: String): Pair<Int, Int>? {
+        val transport = responseHeader(response, "Transport") ?: return null
+        val m = Regex("interleaved=(\\d+)(?:-(\\d+))?").find(transport) ?: return null
+        val rtp = m.groupValues[1].toIntOrNull() ?: return null
+        val rtcp = m.groupValues[2].toIntOrNull() ?: (rtp + 1)
+        return rtp to rtcp
+    }
+
+    /** DESCRIBE + corpo SDP (Content-Length), quando o firmware suportar. */
+    private fun describe(): Pair<Int, String> {
+        val head = request(
+            "DESCRIBE $baseUrl RTSP/1.0",
+            listOf("Accept: application/sdp", "User-Agent: $UA")
+        )
+        val code = statusCode(head)
+        if (code != 200) return code to ""
+        val length = responseHeader(head, "Content-Length")?.toIntOrNull() ?: 0
+        return code to readExactly(length)
+    }
+
+    private fun readExactly(n: Int): String {
+        if (n <= 0) return ""
+        val stream = input ?: return ""
+        val buf = ByteArray(n)
+        var read = 0
+        while (read < n) {
+            val r = stream.read(buf, read, n - read)
+            if (r < 0) break
+            read += r
+        }
+        return String(buf, 0, read, Charsets.US_ASCII)
+    }
+
+    private class Tracks(val video: String?, val audio: String?)
+
+    private fun parseSdpTracks(sdp: String): Tracks {
+        var media = ""
+        var video: String? = null
+        var audio: String? = null
+        for (raw in sdp.lineSequence()) {
+            val line = raw.trim()
+            when {
+                line.startsWith("m=video") -> media = "video"
+                line.startsWith("m=audio") -> media = "audio"
+                line.startsWith("a=control:") -> {
+                    val url = absoluteUrl(line.removePrefix("a=control:").trim()) ?: continue
+                    if (media == "video" && video == null) video = url
+                    if (media == "audio" && audio == null) audio = url
+                }
+            }
+        }
+        return Tracks(video, audio)
+    }
+
+    private fun absoluteUrl(control: String): String? {
+        if (control.isEmpty() || control == "*") return null
+        return when {
+            control.startsWith("rtsp://") -> control
+            control.startsWith("/") -> "rtsp://$host$control"
+            else -> "$baseUrl/${control.trimStart('/')}"
+        }
     }
 
     /** Envia uma requisicao e (opcionalmente) espera a resposta de cabecalho. */
@@ -196,8 +307,10 @@ class RtspClient(
                     val channel = data[off + 1].toInt() and 0xFF
                     val len = ((data[off + 2].toInt() and 0xFF) shl 8) or (data[off + 3].toInt() and 0xFF)
                     if (off + 4 + len > data.size) break // frame incompleto
-                    // canal 0 = video; canal 2 = audio (quando a camera separa a trilha)
-                    if (channel == 0 || channel == 2) handleRtp(data, off + 4, len)
+                    // canais negociados no SETUP (video e audio, quando separado)
+                    if (channel == videoChannel || channel == audioChannel) {
+                        handleRtp(data, off + 4, len)
+                    }
                     off += 4 + len
                 } else {
                     // resposta RTSP textual (ex.: do PLAY), pula ate o fim do cabecalho

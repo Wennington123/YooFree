@@ -22,7 +22,7 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Como instalar |
 |---|---|---|
-| **Android** 7+ | `YooFree-0.7.apk` (assinado) | baixe na aba [Releases](../../releases) e instale |
+| **Android** 7+ | `YooFree-0.8.apk` (assinado) | baixe na aba [Releases](../../releases) e instale |
 
 Todas as versões fazem a mesma coisa:
 
@@ -35,6 +35,17 @@ Todas as versões fazem a mesma coisa:
 E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede.
 
 ---
+
+## Novidades da v0.8
+
+- 🛠️ **SETUP mais tolerante a firmware**: o app agora faz `DESCRIBE` e usa os
+  tracks que a câmera anuncia no SDP; se não houver SDP, tenta os URIs
+  conhecidos com duas variantes de `Transport` (com e sem `mode="PLAY"`)
+- 🎧 **Canais intercalados negociados**: passa a respeitar o `interleaved` que a
+  câmera devolve no `SETUP` (antes assumia 0/2 fixos, o que podia resultar em
+  vídeo/áudio mudos em alguns firmwares)
+- 💬 Mensagens de erro explicam o motivo (401/404/405/501) em vez de só repetir
+  a linha do RTSP
 
 ## Novidades da v0.7
 
