@@ -203,9 +203,10 @@ app antigo cheio de ad (ou umas semanas de dor de cabeça), tomo um café: ☕
 00020126360014br.gov.bcb.pix0114+55749882177935204000053039865802BR5922WENNINGTON DIAS AQUINO62070503***63044EF7
 ```
 
-### Buy Me a Coffee
+### Ko-fi
 
-Em breve — apoio internacional via cartão, pra quem não tem Pix.
+Pelo Ko-fi dá pra apoiar com cartão ou PayPal, com valor livre:
+**https://ko-fi.com/wenningtondaquino**
 
 ---
 
