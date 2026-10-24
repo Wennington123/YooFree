@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de privacidade — YooFree</title>
+<meta name="description" content="O YooFree não coleta dados pessoais: sem conta, sem anúncios, sem telemetria. Conexão apenas local com a sua câmera.">
+<link rel="canonical" href="https://yoofree.qd.je/privacidade.html">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="hero small">
+  <a href="/" aria-label="Voltar ao início"><img src="assets/icon.svg" alt="Ícone do YooFree"></a>
+  <h1>Política de privacidade</h1>
+  <p class="tagline">Sem conta, sem anúncios, sem telemetria.</p>
+</header>
+
+<div class="wrap">
+  <div class="doc">
+    <p class="updated">Em vigor desde 24 de outubro de 2026.</p>
+
+    <p class="lead">Resumo em uma frase: <strong>o YooFree não coleta dados pessoais.</strong> O app fala apenas com a câmera que você indicar, na sua própria rede.</p>
+
+    <h2>O aplicativo Android</h2>
+
+    <h3>O que ele acessa</h3>
+    <ul>
+      <li>Conexões de rede com o <strong>endereço IP da câmera</strong> que você informa (RTSP, porta 554, e TCP/UDP auxiliares da própria câmera);</li>
+      <li>A sua rede local, apenas para <strong>descobrir câmeras</strong> quando você toca em “Buscar” (varredura da sub-rede na porta 554);</li>
+      <li>Armazenamento do próprio app, para <strong>gravar os vídeos</strong> que você mandar gravar.</li>
+    </ul>
+    <p>As permissões declaradas no APK são apenas: <code>INTERNET</code>, <code>ACCESS_NETWORK_STATE</code> e <code>ACCESS_WIFI_STATE</code>. Não há acesso a contatos, localização, microfone, câmera do celular, armazenamento externo amplo ou identificadores de publicidade.</p>
+
+    <h3>O que não acontece</h3>
+    <ul>
+      <li><strong>Nada de nuvem:</strong> vídeo, áudio e comandos vão direto para a câmera; não passam por servidor nosso nem de terceiros;</li>
+      <li><strong>Nada de conta:</strong> não pedimos nome, e-mail, telefone ou login;</li>
+      <li><strong>Nada de analytics:</strong> sem SDK de análise, sem relatório de falhas automático, sem anúncios;</li>
+      <li><strong>Nada de upload:</strong> as gravações ficam no aparelho, em <code>Android/data/br.yoofree.app/files/YooFree/</code>.</li>
+    </ul>
+
+    <h3>Gravações e áudio</h3>
+    <p>As gravações são arquivos locais seus. Apagar o app (ou limpar os dados) apaga as gravações. O áudio reproduzido é recebido da câmera; o microfone do celular não é usado.</p>
+
+    <div class="note">
+      <strong>Você controla a câmera.</strong> O YooFree é somente leitura sobre o vídeo/áudio e envia apenas comandos de PTZ.
+      Mantenha a câmera na rede local e, de preferência, bloqueie o acesso dela à internet no roteador.
+    </div>
+
+    <h2>Este site</h2>
+    <ul>
+      <li>É um site estático hospedado no <strong>GitHub Pages</strong>; não usamos cookies, analytics, fontes externas ou scripts de terceiros;</li>
+      <li>As imagens (ícone e QR do Pix) são servidas pelo próprio site;</li>
+      <li>Como qualquer hospedagem, o GitHub registra dados técnicos de acesso (por exemplo, endereço IP e horário) conforme a
+        <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">política de privacidade do GitHub</a>.
+        Não temos acesso a esses registros individuais.</li>
+    </ul>
+
+    <h2>Doações</h2>
+    <p>Doações via Pix são processadas pelo seu banco e pelo sistema Pix do Banco Central. Nós não recebemos dados além do que aparece no extrato da conta (como o nome de quem enviou). Nenhum dado de pagamento é coletado por este site ou pelo app.</p>
+
+    <h2>Links externos</h2>
+    <p>O site aponta para o GitHub (repositório, releases e issues). Ao abrir esses links, valem as políticas do GitHub.</p>
+
+    <h2>Crianças</h2>
+    <p>O app não é direcionado a crianças e, de qualquer forma, não coleta dados de ninguém.</p>
+
+    <h2>Alterações desta política</h2>
+    <p>Se algo mudar (por exemplo, algum recurso futuro que exija acesso a dados), esta página será atualizada e a data no topo será alterada. Mudanças relevantes também serão citadas nas notas da versão no GitHub.</p>
+
+    <h2>Contato</h2>
+    <p>Dúvidas sobre privacidade: abra uma issue em
+      <a href="https://github.com/Wennington123/YooFree/issues">github.com/Wennington123/YooFree/issues</a>.</p>
+
+    <hr>
+
+    <p><a href="/">← Voltar ao início</a> · <a href="licenca.html">Licença</a></p>
+  </div>
+</div>
+
+<footer>
+  <nav>
+    <a href="https://github.com/Wennington123/YooFree">GitHub</a> ·
+    <a href="https://github.com/Wennington123/YooFree/releases">Releases</a> ·
+    <a href="https://github.com/Wennington123/YooFree/issues">Issues</a> ·
+    <a href="licenca.html">Licença</a> ·
+    <a href="privacidade.html">Privacidade</a>
+  </nav>
+  <p>GPL-3.0-or-later. Projeto independente, sem vínculo com Yoosee ou Gwell.</p>
+</footer>
+
+</body>
+</html>
