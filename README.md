@@ -273,3 +273,10 @@ Documentos oficiais no site:
 
 - Licença: https://yoofree.qd.je/licenca.html
 - Política de privacidade: https://yoofree.qd.je/privacidade.html
+
+---
+
+## Contato
+
+- E-mail: **wenningtondiasx25@gmail.com**
+- Bugs e sugestões: [issues](../../issues)
