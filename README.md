@@ -13,8 +13,9 @@ sem telemetria**. Só você e a sua câmera.
 [![Licença: GPL-3.0](https://img.shields.io/badge/licen%C3%A7a-GPL--3.0-7C6CF0.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/Wennington123/YooFree)](../../releases)
 [![Build](https://github.com/Wennington123/YooFree/actions/workflows/build.yml/badge.svg)](../../actions)
+[![Site](https://img.shields.io/badge/site-yoofree.qd.je-8b7cf6)](https://yoofree.qd.je/)
 
-🌐 **Site oficial:** https://wennington123.github.io/YooFree/
+🌐 **Site oficial:** https://yoofree.qd.je/
 
 ---
 
@@ -51,7 +52,7 @@ E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** 
 
 - ✍️ **Build oficial assinado**: o APK agora sai assinado com chave de release
   (antes era debug), gerado pelo GitHub Actions
-- 🌐 **Site oficial**: https://wennington123.github.io/YooFree/
+- 🌐 **Site oficial**: https://yoofree.qd.je/
 
 ## Novidades da v0.6
 
@@ -99,6 +100,10 @@ E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** 
    **IP da câmera**, ex.: `192.168.1.2`) e toque em **Conectar**.
 4. **PTZ** pelas setas, **zoom** no `−`/`+`, **girar** no botão, **gravar** no botão.
    Os vídeos ficam em `Android/data/br.yoofree.app/files/YooFree/`.
+
+> **Atualizando de uma versão anterior à 0.7?** Desinstale a antiga antes: a 0.7
+> em diante é assinada com chave de release, e o Android não deixa instalar por
+> cima de uma build com assinatura diferente.
 
 O celular precisa estar no **mesmo Wi‑Fi** da câmera.
 
