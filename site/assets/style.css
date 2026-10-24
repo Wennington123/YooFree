@@ -39,6 +39,7 @@ header.hero.small h1 { font-size: clamp(26px, 5vw, 34px); }
   display: inline-flex; align-items: center; gap: 8px;
   padding: 13px 22px; border-radius: 999px; font-weight: 600; font-size: 15px;
   border: 1px solid transparent; transition: transform .15s ease, background .15s ease;
+  white-space: nowrap;
 }
 .btn:active { transform: scale(.97); }
 .btn svg { width: 18px; height: 18px; display: block; }
@@ -87,6 +88,8 @@ li b, li strong { color: var(--text); font-weight: 600; }
 .done { color: var(--good); }
 
 .donate { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+.donate > div { flex: 1 1 260px; min-width: 0; }
+.donate .btn { align-self: flex-start; }
 .donate img { width: 180px; height: 180px; border-radius: 16px; background: #fff; padding: 8px; }
 .donate .copy {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
