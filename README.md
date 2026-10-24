@@ -14,6 +14,7 @@ sem telemetria**. Só você e a sua câmera.
 [![Release](https://img.shields.io/github/v/release/Wennington123/YooFree)](../../releases)
 [![Build](https://github.com/Wennington123/YooFree/actions/workflows/build.yml/badge.svg)](../../actions)
 [![Site](https://img.shields.io/badge/site-yoofree.qd.je-8b7cf6)](https://yoofree.qd.je/)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-apoie%20o%20projeto-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/wenningtondaquino)
 
 🌐 **Site oficial:** https://yoofree.qd.je/
 

@@ -41,6 +41,7 @@ header.hero.small h1 { font-size: clamp(26px, 5vw, 34px); }
   border: 1px solid transparent; transition: transform .15s ease, background .15s ease;
 }
 .btn:active { transform: scale(.97); }
+.btn svg { width: 18px; height: 18px; display: block; }
 .btn.primary { background: var(--accent); color: #0b0e14; }
 .btn.ghost { background: transparent; color: var(--text); border-color: var(--hairline); }
 .btn.ghost:hover { background: var(--panel); text-decoration: none; }
