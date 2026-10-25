@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yoofree.qd.je/sitemap.xml
