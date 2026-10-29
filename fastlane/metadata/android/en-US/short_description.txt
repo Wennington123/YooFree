@@ -1,0 +1,1 @@
+Open client for Yoosee cameras, no cloud

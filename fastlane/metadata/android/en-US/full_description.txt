@@ -1,0 +1,15 @@
+YooFree is an open, ad-free client for Yoosee/GW cameras on Android.
+
+It talks directly to the camera on your local network: no cloud, no account, no AI, no telemetry. Just you and your camera.
+
+Features:
+- Live HEVC/H.265 1080p video straight from the camera
+- PTZ: move the camera (up/down/left/right)
+- Digital zoom from 1x to 5x
+- Local MP4 recording (no re-encode, no cloud)
+- Rotate the image 90 degrees (useful when the camera is upside down)
+- Landscape mode with auto-hiding HUD, two-finger pinch zoom, camera audio, and automatic camera discovery on the network
+
+Only the camera IP is needed. The phone must be on the same Wi-Fi as the camera.
+
+YooFree is free software under GPL-3.0-or-later. For support or bug reports, use the GitHub issue tracker.

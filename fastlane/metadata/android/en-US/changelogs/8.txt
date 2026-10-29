@@ -1,0 +1,1 @@
+Tolerant SETUP: uses DESCRIBE tracks when announced, otherwise tries known URIs with two Transport variants. Negotiates interleaved channels from the SETUP reply. Clearer RTSP error messages.

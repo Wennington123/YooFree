@@ -1,0 +1,1 @@
+SETUP mais tolerante: usa tracks do DESCRIBE quando anunciado, senão tenta URIs conhecidos com duas variantes de Transport. Negocia canais intercalados da resposta do SETUP. Mensagens de erro RTSP mais claras.
