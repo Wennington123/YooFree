@@ -195,13 +195,12 @@ app antigo cheio de ad (ou umas semanas de dor de cabeça), tomo um café: ☕
   <img src="assets/pix-qrcode.png" width="220" alt="QR Code Pix">
 </p>
 
-- **Recebedor:** Wennington Dias Aquino
-- **Chave (telefone):** `+55 74 98821-7793`
+- **Chave Pix (aleatória):** `8eb4ec02-4a67-42b1-b3dc-6243efcd426a`
 - **Valor:** o que você escolher (QR também aceita valor livre no app do banco)
 - Ou copie o código Pix:
 
 ```
-00020126360014br.gov.bcb.pix0114+55749882177935204000053039865802BR5922WENNINGTON DIAS AQUINO62070503***63044EF7
+00020126360014br.gov.bcb.pix01228eb4ec02-4a67-42b1-b3dc-6243efcd426a5204000053039865802BR5922YooFree62070503***6304
 ```
 
 ### Ko-fi
