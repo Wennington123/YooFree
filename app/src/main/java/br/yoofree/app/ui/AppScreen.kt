@@ -52,7 +52,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
@@ -61,8 +61,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,6 +78,7 @@ fun YooFreeApp() {
         context.applicationContext.getSharedPreferences("yoofree", Context.MODE_PRIVATE)
     }
     if (vm.host.isEmpty()) vm.host = prefs.getString("host", "") ?: ""
+    if (vm.password.isEmpty()) vm.password = prefs.getString("pass", "") ?: ""
 
     val landscape = LocalConfiguration.current.orientation ==
         android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -253,28 +254,29 @@ private fun VideoSurface(
             .background(Color.Black)
             .border(1.dp, Color.White.copy(alpha = 0.06f), RoundedCornerShape(28.dp))
             .clipToBounds()
+            .onSizeChanged { vm.viewW = it.width.toFloat(); vm.viewH = it.height.toFloat() }
             .pointerInput(vm) {
-                detectTransformGestures { _, _, zoomChange, _ ->
-                    vm.zoomByFactor(zoomChange)
+                detectTransformGestures { centroid, pan, zoomChange, _ ->
+                    vm.applyGesture(zoomChange, pan.x, pan.y, centroid.x, centroid.y)
                 }
+            }
+            .pointerInput(vm) {
+                detectTapGestures(
+                    onDoubleTap = { offset -> vm.onDoubleTap(offset.x, offset.y) }
+                )
             },
         contentAlignment = Alignment.Center,
     ) {
         AndroidView(
             modifier = Modifier
-                .layout { measurable, constraints ->
-                    val w = constraints.maxWidth
-                    val h = constraints.maxHeight
-                    val swapped = vm.rotation == 90 || vm.rotation == 270
-                    val cw = ((if (swapped) h else w) * vm.zoom).toInt().coerceAtLeast(1)
-                    val ch = ((if (swapped) w else h) * vm.zoom).toInt().coerceAtLeast(1)
-                    val placeable = measurable.measure(Constraints.fixed(cw, ch))
-                    layout(w, h) { placeable.place((w - cw) / 2, (h - ch) / 2) }
-                }
-                .then(
-                    if (vm.rotation == 0) Modifier
-                    else Modifier.graphicsLayer { rotationZ = vm.rotation.toFloat() }
-                ),
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = vm.zoom
+                    scaleY = vm.zoom
+                    translationX = vm.offsetX
+                    translationY = vm.offsetY
+                    rotationZ = vm.rotation.toFloat()
+                },
             factory = { ctx ->
                 TextureView(ctx).apply {
                     surfaceTextureListener = object : TextureView.SurfaceTextureListener {
@@ -323,7 +325,7 @@ private fun ConnectArea(
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Uri,
-                            imeAction = ImeAction.Done,
+                            imeAction = ImeAction.Next,
                         ),
                         textStyle = MaterialTheme.typography.bodyMedium,
                         shape = RoundedCornerShape(16.dp),
@@ -353,6 +355,31 @@ private fun ConnectArea(
                         )
                     }
                 }
+
+                OutlinedTextField(
+                    value = vm.password,
+                    onValueChange = { vm.password = it },
+                    label = { Text("Senha do RTSP (opcional)") },
+                    supportingText = { Text("Só se a câmera exigir senha (ex.: acesso por VPN). Usuário: admin") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                    ),
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Accent,
+                        unfocusedBorderColor = Hairline,
+                        focusedLabelColor = Accent,
+                        unfocusedLabelColor = TextLow,
+                        cursorColor = Accent,
+                        focusedTextColor = TextHigh,
+                        unfocusedTextColor = TextHigh,
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                )
 
                 AnimatedVisibility(
                     visible = vm.foundHosts.isNotEmpty(),
@@ -397,7 +424,7 @@ private fun ConnectButton(
             container = if (vm.connected) PanelHi else Accent,
             content = if (vm.connected) TextHigh else OnAccent,
             onClick = {
-                prefs.edit().putString("host", vm.host).apply()
+                prefs.edit().putString("host", vm.host).putString("pass", vm.password).apply()
                 vm.toggleConnection()
             },
         )
@@ -405,7 +432,7 @@ private fun ConnectButton(
     }
     Button(
         onClick = {
-            prefs.edit().putString("host", vm.host).apply()
+            prefs.edit().putString("host", vm.host).putString("pass", vm.password).apply()
             vm.toggleConnection()
         },
         enabled = vm.connected || (vm.host.isNotBlank() && surfaceReady),
