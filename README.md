@@ -33,6 +33,7 @@ Todas as versões fazem a mesma coisa:
 - 🔍 **Zoom** digital de 1x a 5x, ancorado no dedo, com arrasto pra olhar o canto que quiser (toque duplo volta pro 1x)
 - 🎥 **Gravação local** em MP4 (sem re-encode, sem nuvem)
 - 🔄 **Girar** a imagem em 90° (útil se a câmera estiver "de cabeça pra baixo")
+- 🎛️ **Configurações**: tema (sistema/claro/escuro), inverter comandos PTZ, glossário dos termos e apoio ao projeto
 
 E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede.
 

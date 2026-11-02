@@ -1,15 +1,19 @@
 package br.yoofree.app.ui
 
+import android.content.Intent
 import android.content.Context
 import android.graphics.SurfaceTexture
+import android.net.Uri
 import android.view.Surface
 import android.view.TextureView
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,17 +32,25 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,11 +65,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -69,9 +84,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.yoofree.app.CameraViewModel
+import br.yoofree.app.R
 
 @Composable
-fun YooFreeApp() {
+fun YooFreeApp(onThemeMode: (ThemeMode) -> Unit = {}) {
     val vm: CameraViewModel = viewModel()
     val context = LocalContext.current
     val prefs = remember {
@@ -79,14 +95,25 @@ fun YooFreeApp() {
     }
     if (vm.host.isEmpty()) vm.host = prefs.getString("host", "") ?: ""
     if (vm.password.isEmpty()) vm.password = prefs.getString("pass", "") ?: ""
+    vm.ptzInvert = prefs.getBoolean("ptzInvert", false)
+    var showSettings by remember { mutableStateOf(false) }
 
     val landscape = LocalConfiguration.current.orientation ==
         android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
     if (landscape) {
-        LandscapeScreen(vm, prefs)
+        LandscapeScreen(vm, prefs, onOpenSettings = { showSettings = true })
     } else {
-        PortraitScreen(vm, prefs)
+        PortraitScreen(vm, prefs, onOpenSettings = { showSettings = true })
+    }
+
+    if (showSettings) {
+        SettingsSheet(
+            prefs = prefs,
+            onThemeMode = onThemeMode,
+            vm = vm,
+            onDismiss = { showSettings = false },
+        )
     }
 }
 
@@ -94,6 +121,7 @@ fun YooFreeApp() {
 private fun PortraitScreen(
     vm: CameraViewModel,
     prefs: android.content.SharedPreferences,
+    onOpenSettings: () -> Unit,
 ) {
     var surfaceReady by remember { mutableStateOf(false) }
 
@@ -105,7 +133,7 @@ private fun PortraitScreen(
             .padding(horizontal = 18.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Header(vm)
+        Header(vm, onOpenSettings)
         VideoSurface(vm, Modifier.fillMaxWidth().weight(1f)) { surfaceReady = it }
         ConnectArea(vm, prefs, surfaceReady)
         ControlCard(vm)
@@ -116,6 +144,7 @@ private fun PortraitScreen(
 private fun LandscapeScreen(
     vm: CameraViewModel,
     prefs: android.content.SharedPreferences,
+    onOpenSettings: () -> Unit,
 ) {
     var surfaceReady by remember { mutableStateOf(false) }
     var hudVisible by remember { mutableStateOf(true) }
@@ -170,6 +199,12 @@ private fun LandscapeScreen(
                                 size = 44.dp,
                                 onClick = { vm.cycleRotation() },
                             )
+                            RoundButton(
+                                glyph = "⚙",
+                                description = "Configurações",
+                                size = 44.dp,
+                                onClick = onOpenSettings,
+                            )
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -194,7 +229,7 @@ private fun LandscapeScreen(
 }
 
 @Composable
-private fun Header(vm: CameraViewModel) {
+private fun Header(vm: CameraViewModel, onOpenSettings: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -206,6 +241,13 @@ private fun Header(vm: CameraViewModel) {
         )
         Spacer(Modifier.weight(1f))
         StatusPill(vm)
+        Spacer(Modifier.width(8.dp))
+        RoundButton(
+            glyph = "⚙",
+            description = "Configurações",
+            size = 40.dp,
+            onClick = onOpenSettings,
+        )
     }
 }
 
@@ -599,5 +641,188 @@ private fun RoundButton(
             fontSize = 19.sp,
             fontWeight = FontWeight.Medium,
         )
+    }
+}
+
+/** Termos que o app permeia, pro glossario das configuracoes. */
+private val Glossary = listOf(
+    "RTSP" to "Protocolo que controla o stream: é o \"controle remoto\" do vídeo " +
+        "pela rede (SETUP, PLAY, TEARDOWN). O YooFree fala direto com a câmera " +
+        "nele, na sua rede local.",
+    "RTP" to "Transporte dos pacotes de vídeo e áudio em tempo real, por cima do " +
+        "RTSP (na mesma conexão TCP, canais intercalados).",
+    "HEVC / H.265" to "Codec de vídeo da câmera: comprime 1080p usando pouca banda. " +
+        "É decodificado direto no hardware do celular.",
+    "G.711" to "Codec de áudio (A-law/µ-law) que essas câmeras transmitem junto " +
+        "com o vídeo.",
+    "PTZ" to "Pan/Tilt/Zoom — os comandos que giram a câmera (cima, baixo, " +
+        "esquerda, direita).",
+    "ONVIF" to "Padrão aberto de câmeras IP. Nessa linha, o stream vive no path " +
+        "/onvif1 (e /onvif2 para o stream secundário).",
+    "SDP" to "Descrição do stream que a câmera devolve no DESCRIBE: quais trilhas " +
+        "existem (vídeo, áudio) e os URIs de cada uma.",
+    "Digest (HTTP)" to "Autenticação por desafio usada quando a câmera tem senha " +
+        "no RTSP: a senha nunca trafega em texto puro.",
+    "IDR / keyframe" to "Quadro-chave que reinicia a decodificação. O app espera " +
+        "um IDR antes de desenhar — é por isso que a imagem nasce limpa.",
+    "VPN (WireGuard/Tailscale)" to "Túnel criptografado que coloca o celular " +
+        "\"dentro\" da rede de casa, pra acessar a câmera de fora sem expor nada " +
+        "na internet.",
+)
+
+@Composable
+private fun SettingsSheet(
+    vm: CameraViewModel,
+    prefs: android.content.SharedPreferences,
+    onThemeMode: (ThemeMode) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
+    val sheetState = rememberModalBottomSheetState()
+    val version = remember {
+        runCatching {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        }.getOrNull() ?: "?"
+    }
+    val pixKey = "8eb4ec02-4a67-42b1-b3dc-6243efcd426a"
+    var selectedMode by remember { mutableStateOf(ThemeMode.fromId(prefs.getString("theme", null))) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Panel,
+        contentColor = TextHigh,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(
+                text = "Configurações",
+                color = TextHigh,
+                style = MaterialTheme.typography.titleLarge,
+            )
+
+            Text("Tema", color = TextLow, style = MaterialTheme.typography.labelMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ThemeMode.entries.forEach { mode ->
+                    FilterChip(
+                        selected = selectedMode == mode,
+                        onClick = {
+                            selectedMode = mode
+                            onThemeMode(mode)
+                        },
+                        label = { Text(mode.label) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Accent,
+                            selectedLabelColor = OnAccent,
+                            labelColor = TextHigh,
+                            borderColor = Hairline,
+                        ),
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Inverter comandos PTZ", color = TextHigh, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Câmera montada de cabeça pra baixo: cima vira baixo e " +
+                            "esquerda vira direita.",
+                        color = TextLow,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Switch(
+                    checked = vm.ptzInvert,
+                    onCheckedChange = { on ->
+                        vm.ptzInvert = on
+                        prefs.edit().putBoolean("ptzInvert", on).apply()
+                    },
+                )
+            }
+
+            HorizontalDivider(color = Hairline)
+
+            Text("Apoie o projeto", color = TextHigh, style = MaterialTheme.typography.titleMedium)
+            Text(
+                "O YooFree é 100% gratuito, sem anúncio e open source. Se ele te " +
+                    "economizou o app antigo cheio de anúncio, tomo um café:",
+                color = TextLow,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Image(
+                painter = painterResource(R.drawable.pix_qrcode),
+                contentDescription = "QR Code Pix",
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .size(160.dp),
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Pix: $pixKey",
+                    color = TextHigh,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                OutlinedButton(
+                    onClick = {
+                        clipboard.setText(AnnotatedString(pixKey))
+                        android.widget.Toast.makeText(
+                            context, "Chave Pix copiada", Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                ) { Text("Copiar", style = MaterialTheme.typography.labelMedium) }
+            }
+            OutlinedButton(
+                onClick = {
+                    runCatching {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://ko-fi.com/wenningtondaquino"))
+                        )
+                    }
+                },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Apoiar no Ko-fi (cartão ou PayPal)") }
+
+            HorizontalDivider(color = Hairline)
+
+            Text("Glossário", color = TextHigh, style = MaterialTheme.typography.titleMedium)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Glossary.forEach { (term, desc) ->
+                    Column {
+                        Text(term, color = Accent, style = MaterialTheme.typography.labelMedium)
+                        Text(desc, color = TextLow, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+
+            HorizontalDivider(color = Hairline)
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("YooFree v$version", color = TextHigh, style = MaterialTheme.typography.labelMedium)
+                Text(
+                    "GPL-3.0 — sem nuvem, sem conta, sem anúncios. Site: yoofree.qd.je",
+                    color = TextLow,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
     }
 }

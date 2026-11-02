@@ -29,6 +29,9 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
     var foundHosts by mutableStateOf(listOf<String>())
     var audioOn by mutableStateOf(true)
 
+    /** Câmera de cabeça pra baixo: inverte os comandos PTZ. */
+    var ptzInvert by mutableStateOf(false)
+
     // Tamanho do quadro do video na tela (nao e estado de UI: so geometria).
     var viewW = 0f
     var viewH = 0f
@@ -80,7 +83,14 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun ptz(command: String) {
-        session?.ptz(command)
+        val cmd = if (ptzInvert) when (command) {
+            "UP" -> "DOWN"
+            "DOWN" -> "UP"
+            "LEFT" -> "RIGHT"
+            "RIGHT" -> "LEFT"
+            else -> command
+        } else command
+        session?.ptz(cmd)
     }
 
     fun toggleAudio() {
