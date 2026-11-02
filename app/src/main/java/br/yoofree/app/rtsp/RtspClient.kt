@@ -142,9 +142,15 @@ class RtspClient(
             if (setupCode != 200) fail("SETUP", setupResponse)
             session = Regex("Session:\\s*([0-9a-zA-Z]+)").find(setupResponse)?.groupValues?.get(1).orEmpty()
 
-            // 3) Audio: trilha do SDP ou /track2. Se nao existir, o audio pode vir
-            //    multiplexado no RTP do video (handleRtp cuida disso).
-            val audioTargets = (listOfNotNull(audioUrl) + "$baseUrl/track2").distinct()
+            // 3) Audio: trilha do SDP quando anunciada; sem SDP nenhum, chuta
+            //    /track2 (firmwares que nao respondem DESCRIBE). Com SDP presente
+            //    e sem trilha de audio, NAO chuta: SETUP em path inexistente
+            //    fecha a conexao em servidores estritos (ex.: gortsplib).
+            val audioTargets = when {
+                audioUrl != null -> listOf(audioUrl)
+                videoUrl == null -> listOf("$baseUrl/track2")
+                else -> emptyList()
+            }
             for (target in audioTargets) {
                 val audioResp = runCatching {
                     request(
