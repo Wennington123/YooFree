@@ -129,9 +129,9 @@ class VideoDecoder(
         try {
             c = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_HEVC)
             val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_HEVC, WIDTH, HEIGHT)
-            format.setByteBuffer("csd-0", ByteBuffer.wrap(withStartCode(vps!!)))
-            format.setByteBuffer("csd-1", ByteBuffer.wrap(withStartCode(sps!!)))
-            format.setByteBuffer("csd-2", ByteBuffer.wrap(withStartCode(pps!!)))
+            // HEVC: csd-0 = VPS+SPS+PPS juntos (AnnexB), como o MediaCodec espera.
+            val csd = withStartCode(vps!!) + withStartCode(sps!!) + withStartCode(pps!!)
+            format.setByteBuffer("csd-0", ByteBuffer.wrap(csd))
             c.configure(format, surface, null, 0)
             c.start()
             codec = c
