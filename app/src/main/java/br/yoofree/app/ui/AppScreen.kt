@@ -723,7 +723,6 @@ private fun SettingsSheet(
                             selectedContainerColor = Accent,
                             selectedLabelColor = OnAccent,
                             labelColor = TextHigh,
-                            borderColor = Hairline,
                         ),
                     )
                 }
