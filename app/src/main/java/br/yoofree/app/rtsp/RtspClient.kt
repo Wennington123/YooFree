@@ -3,21 +3,28 @@ package br.yoofree.app.rtsp
 import android.util.Log
 import java.io.InputStream
 import java.io.OutputStream
+import java.math.BigInteger
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketTimeoutException
+import java.security.MessageDigest
+import java.security.SecureRandom
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Cliente RTSP minimo, feito sob medida para cameras Yoosee/GW.
  *
  * Essas cameras NAO falam RTSP padrao: o DESCRIBE responde 400 quando o cliente
- * manda Authorization, entao players prontos nao conseguem ler o SDP. Mas
- * SETUP + PLAY funcionam sem autenticacao. Aqui fazemos apenas o necessario.
+ * manda Authorization Basic, entao players prontos nao conseguem ler o SDP. Mas
+ * SETUP + PLAY funcionam sem autenticacao (ou com HTTP Digest, suportado aqui).
+ * Aqui fazemos apenas o necessario.
  */
 class RtspClient(
     private val host: String,
     private val port: Int = 554,
     private val path: String = "onvif1",
+    private val password: String = "",
+    private val username: String = "admin",
     private val listener: Listener
 ) {
     interface Listener {
@@ -50,15 +57,23 @@ class RtspClient(
     private var cseq = 0
     @Volatile private var lastRequestCseq = -1
     @Volatile private var lastPtzCseq = -1
+    @Volatile private var lastKeepAliveCseq = -1
     private var depacketizer = HevcDepacketizer()
     private var firstTs = -1L
     private var auCount = 0
+
+    // Auth Digest (RFC 2617): aprendida no primeiro 401 e reusada nas proximas
+    // requisicoes. Sem senha configurada, nada e enviado (comportamento antigo).
+    @Volatile private var authHeader: String? = null
+    private val authNc = AtomicInteger(0)
+    private val cnonce = BigInteger(64, SecureRandom()).toString(16)
 
     /** Canais intercalados negociados no SETUP (a camera pode devolver outros). */
     @Volatile private var videoChannel = 0
     @Volatile private var audioChannel = 2
 
-    private val baseUrl get() = "rtsp://$host/$path"
+    private val baseUrl
+        get() = if (port == 554) "rtsp://$host/$path" else "rtsp://$host:$port/$path"
 
     fun start() {
         if (running) return
@@ -247,24 +262,90 @@ class RtspClient(
         }
     }
 
-    /** Envia uma requisicao e (opcionalmente) espera a resposta de cabecalho. */
+    /**
+     * Envia uma requisicao e (opcionalmente) espera a resposta de cabecalho.
+     * Em 401 com desafio Digest (e senha configurada), calcula o Authorization
+     * e reenvia a mesma requisicao uma vez.
+     */
     private fun request(line: String, headers: List<String>, readResponse: Boolean = true): String {
+        val first = send(line, headers)
+        if (!readResponse) return ""
+        if (statusCode(first) == 401 && password.isNotEmpty()) {
+            val challenge = responseHeader(first, "WWW-Authenticate")?.trim()
+            if (challenge != null && challenge.startsWith("Digest", ignoreCase = true)) {
+                buildDigestHeader(line, challenge)?.let {
+                    Log.i(TAG, "401 Digest: reenviando com Authorization")
+                    authHeader = it
+                    return send(line, headers)
+                }
+                Log.w(TAG, "desafio Digest nao suportado: $challenge")
+            }
+        }
+        return first
+    }
+
+    private fun send(line: String, headers: List<String>): String {
         synchronized(writeLock) {
             cseq += 1
             lastRequestCseq = cseq
             // Guarda o CSeq do PTZ para o streamLoop reconhecer a resposta.
             if (line.startsWith("SET_PARAMETER")) lastPtzCseq = cseq
+            if (line.startsWith("GET_PARAMETER")) lastKeepAliveCseq = cseq
             val sb = StringBuilder()
             sb.append(line).append("\r\n")
             sb.append("CSeq: ").append(cseq).append("\r\n")
             if (session.isNotEmpty()) sb.append("Session: ").append(session).append("\r\n")
+            authHeader?.let { sb.append("Authorization: ").append(it).append("\r\n") }
             headers.forEach { sb.append(it).append("\r\n") }
             sb.append("\r\n")
             output?.write(sb.toString().toByteArray(Charsets.US_ASCII))
             output?.flush()
         }
-        return if (readResponse) readHeader() else ""
+        return readHeader()
     }
+
+    /** Monta o header Authorization: Digest para o metodo/URI da requisicao. */
+    private fun buildDigestHeader(requestLine: String, challenge: String): String? {
+        // (?:^|[,\s]) antes da chave: "nonce" nao pode casar dentro de "cnonce".
+        fun value(key: String): String? {
+            val m = Regex("(?i)(?:^|[,\\s])$key\\s*=\\s*(\"([^\"]*)\"|([^,\\s]+))").find(challenge)
+                ?: return null
+            return m.groupValues[2].ifEmpty { m.groupValues[3] }
+        }
+        val algorithm = value("algorithm") ?: "MD5"
+        if (!algorithm.equals("MD5", true)) return null // MD5-sess: fora do escopo
+        val realm = value("realm") ?: return null
+        val nonce = value("nonce") ?: return null
+        val qop = value("qop")
+            ?.split(',')?.map { it.trim() }
+            ?.firstOrNull { it.equals("auth", true) } ?: ""
+        val opaque = value("opaque")
+        val method = requestLine.substringBefore(' ').uppercase()
+        val uri = requestLine.split(' ').getOrNull(1) ?: return null
+
+        val ha1 = md5("$username:$realm:$password")
+        val ha2 = md5("$method:$uri")
+        val nc = String.format("%08x", authNc.incrementAndGet())
+        val response = if (qop.isEmpty()) md5("$ha1:$nonce:$ha2")
+        else md5("$ha1:$nonce:$nc:$cnonce:$qop:$ha2")
+
+        val sb = StringBuilder("Digest ")
+            .append("username=\"").append(username).append("\", ")
+            .append("realm=\"").append(realm).append("\", ")
+            .append("nonce=\"").append(nonce).append("\", ")
+            .append("uri=\"").append(uri).append("\", ")
+            .append("response=\"").append(response).append("\", ")
+            .append("algorithm=MD5")
+        if (qop.isNotEmpty()) {
+            sb.append(", qop=auth, nc=").append(nc).append(", cnonce=\"").append(cnonce).append("\"")
+        }
+        if (opaque != null) sb.append(", opaque=\"").append(opaque).append("\"")
+        return sb.toString()
+    }
+
+    private fun md5(s: String): String =
+        MessageDigest.getInstance("MD5").digest(s.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
 
     private fun readHeader(): String {
         val stream = input ?: return ""
@@ -326,6 +407,10 @@ class RtspClient(
                     if (code != null && respCseq != null && respCseq == lastPtzCseq) {
                         // Resposta de um SET_PARAMETER de PTZ: informa sem derrubar o stream.
                         listener.onPtzResult(code)
+                    } else if (code != null && code >= 400 && respCseq == lastKeepAliveCseq) {
+                        // Keepalive recusado (nonce expirado etc.): loga e segue;
+                        // derrubar o stream por isso e pior do que perder um ping.
+                        Log.w(TAG, "keepalive respondeu $code; seguindo")
                     } else if (code != null && code >= 400) {
                         throw RuntimeException("camera respondeu: $firstLine")
                     }

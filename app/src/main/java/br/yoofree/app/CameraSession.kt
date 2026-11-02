@@ -14,11 +14,14 @@ import java.util.Locale
 /** Junta cliente RTSP + decoder + audio + muxer MP4 numa sessao so. */
 class CameraSession(
     private val context: Context,
-    private val host: String,
+    host: String,
+    port: Int = 554,
+    password: String = "",
     private val onState: (String) -> Unit
 ) : RtspClient.Listener {
 
-    private val client = RtspClient(host, listener = this)
+    private val displayHost = if (port == 554) host else "$host:$port"
+    private val client = RtspClient(host, port, password = password, listener = this)
     private val decoder = VideoDecoder { onState("Erro: $it") }
     private val audio = AudioPlayer()
     private var muxer: Mp4Muxer? = null
@@ -30,7 +33,7 @@ class CameraSession(
 
     fun connect() {
         sawError = false
-        onState("Conectando a $host…")
+        onState("Conectando a $displayHost…")
         decoder.start()
         client.start()
     }
