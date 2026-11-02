@@ -81,7 +81,7 @@ class VideoDecoder(
                     32 -> if (!nal.contentEquals(vps)) { vps = nal; newCsd = true }
                     33 -> if (!nal.contentEquals(sps)) { sps = nal; newCsd = true }
                     34 -> if (!nal.contentEquals(pps)) { pps = nal; newCsd = true }
-                    19, 20 -> keyframe = true // IDR_W_RADL / IDR_N_LP
+                    19, 20, 21 -> keyframe = true // IDR_W_RADL / IDR_N_LP / CRA
                 }
             }
             // CSD mudou no meio do stream (camera reiniciou/resolveu trocar):
