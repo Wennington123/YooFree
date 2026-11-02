@@ -27,6 +27,11 @@ class VideoDecoder(
     @Volatile private var running = false
     private var firstFrame = true
 
+    // So renderiza depois do primeiro IDR: decodificar P-frame sem referencia
+    // gera imagem "quebrada" (artefatos de predict sem base).
+    private var waitingKeyframe = true
+    private var waitingSince = 0L
+
     private val startCode = byteArrayOf(0, 0, 0, 1)
 
     fun start() {
@@ -57,6 +62,8 @@ class VideoDecoder(
             surface = newSurface
             releaseCodec()
             firstFrame = true
+            waitingKeyframe = true
+            waitingSince = System.currentTimeMillis()
             if (newSurface != null && vps != null && sps != null && pps != null) {
                 configureInternal()
             }
@@ -67,18 +74,39 @@ class VideoDecoder(
     fun feed(nals: List<ByteArray>, ptsUs: Long) {
         synchronized(lock) {
             var newCsd = false
+            var keyframe = false
             for (nal in nals) {
                 if (nal.size < 2) continue
                 when ((nal[0].toInt() ushr 1) and 0x3F) {
-                    32 -> if (vps == null) { vps = nal; newCsd = true }
-                    33 -> if (sps == null) { sps = nal; newCsd = true }
-                    34 -> if (pps == null) { pps = nal; newCsd = true }
+                    32 -> if (!nal.contentEquals(vps)) { vps = nal; newCsd = true }
+                    33 -> if (!nal.contentEquals(sps)) { sps = nal; newCsd = true }
+                    34 -> if (!nal.contentEquals(pps)) { pps = nal; newCsd = true }
+                    19, 20 -> keyframe = true // IDR_W_RADL / IDR_N_LP
                 }
             }
-            if (!configured && surface != null && (newCsd || (vps != null && sps != null && pps != null))) {
-                if (vps != null && sps != null && pps != null) configureInternal()
+            // CSD mudou no meio do stream (camera reiniciou/resolveu trocar):
+            // descarta o codec; reconfigura com o CSD novo abaixo.
+            if (newCsd && configured) releaseCodec()
+            if (!configured && surface != null && vps != null && sps != null && pps != null) {
+                configureInternal()
             }
             if (!configured) return
+            if (waitingKeyframe) {
+                val waited = System.currentTimeMillis() - waitingSince
+                if (!keyframe && waited < KEYFRAME_TIMEOUT_MS) return
+                if (!keyframe) Log.w(TAG, "sem IDR em ${waited}ms; aceitando frames sem referencia")
+                waitingKeyframe = false
+                queue.clear()
+            } else if (keyframe) {
+                queue.clear() // IDR novo: joga fora fila atrasada
+            }
+            if (queue.size >= MAX_QUEUE) {
+                Log.w(TAG, "fila cheia (${queue.size}); volta a renderizar no proximo IDR")
+                waitingKeyframe = true
+                waitingSince = System.currentTimeMillis()
+                queue.clear()
+                return
+            }
             queue.addLast(buildAnnexB(nals) to ptsUs)
             lock.notifyAll()
         }
@@ -136,19 +164,28 @@ class VideoDecoder(
                 }
 
                 try {
-                    runDecodeCycle(c, info)
+                    if (queue.isEmpty()) {
+                        // Sem trabalho: drena a saida e espera, em vez de encher o
+                        // codec de buffers de entrada vazios (gastava CPU a toa).
+                        drainOutputs(c, info)
+                        lock.wait(10)
+                    } else {
+                        runDecodeCycle(c, info)
+                    }
                 } catch (e: IllegalStateException) {
                     // Codec em estado Released (morreu ou foi liberado por outro fluxo):
                     // descarta o codec; o proximo feed com CSD reconfigura do zero.
                     Log.e(TAG, "MediaCodec em estado invalido, liberando para reconfigurar", e)
                     releaseCodec()
+                    waitingKeyframe = true
+                    waitingSince = System.currentTimeMillis()
                 }
             }
         }
     }
 
     private fun runDecodeCycle(c: MediaCodec, info: MediaCodec.BufferInfo) {
-        cycle@ while (true) {
+        while (true) {
             val inIndex = c.dequeueInputBuffer(10_000)
             if (inIndex >= 0) {
                 val item = queue.pollFirst()
@@ -163,22 +200,28 @@ class VideoDecoder(
                     }
                 }
             }
-            while (true) {
-                val outIndex = c.dequeueOutputBuffer(info, 0)
-                when {
-                    outIndex >= 0 -> {
-                        if (firstFrame) {
-                            Log.i(TAG, "primeiro frame decodificado")
-                            firstFrame = false
-                        }
-                        runCatching { c.releaseOutputBuffer(outIndex, true) }
+            drainOutputs(c, info)
+            // Sem buffer de entrada livre ou fila esvaziou: volta pro loop externo.
+            if (inIndex < 0 || queue.isEmpty()) return
+        }
+    }
+
+    private fun drainOutputs(c: MediaCodec, info: MediaCodec.BufferInfo) {
+        while (true) {
+            val outIndex = c.dequeueOutputBuffer(info, 0)
+            when {
+                outIndex >= 0 -> {
+                    if (firstFrame) {
+                        Log.i(TAG, "primeiro frame decodificado")
+                        firstFrame = false
                     }
-                    outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
-                        runCatching { c.outputFormat }.getOrNull()
-                            ?.let { Log.i(TAG, "formato de saida: $it") }
-                    }
-                    else -> break@cycle
+                    runCatching { c.releaseOutputBuffer(outIndex, true) }
                 }
+                outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                    runCatching { c.outputFormat }.getOrNull()
+                        ?.let { Log.i(TAG, "formato de saida: $it") }
+                }
+                else -> return
             }
         }
     }
@@ -187,5 +230,7 @@ class VideoDecoder(
         const val TAG = "YooFree-DEC"
         const val WIDTH = 1920
         const val HEIGHT = 1080
+        const val MAX_QUEUE = 60
+        const val KEYFRAME_TIMEOUT_MS = 5_000L
     }
 }
