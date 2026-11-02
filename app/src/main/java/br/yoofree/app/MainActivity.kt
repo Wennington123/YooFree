@@ -20,8 +20,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = getSharedPreferences("yoofree", Context.MODE_PRIVATE)
-        var themeMode by remember { mutableStateOf(ThemeMode.fromId(prefs.getString("theme", null))) }
         setContent {
+            var themeMode by remember {
+                mutableStateOf(ThemeMode.fromId(prefs.getString("theme", null)))
+            }
             YooFreeTheme(themeMode) {
                 Surface(modifier = Modifier.fillMaxSize(), color = Bg) {
                     YooFreeApp(

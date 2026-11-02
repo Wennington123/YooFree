@@ -670,6 +670,7 @@ private val Glossary = listOf(
         "na internet.",
 )
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun SettingsSheet(
     vm: CameraViewModel,
