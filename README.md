@@ -24,72 +24,17 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Como instalar |
 |---|---|---|
-| **Android** 7+ | `YooFree-0.8.apk` (assinado) | baixe na aba [Releases](../../releases) e instale |
+| **Android** 7+ | `YooFree-0.9.apk` (assinado) | baixe na aba [Releases](../../releases) e instale |
 
 Todas as versões fazem a mesma coisa:
 
 - 📹 **Vídeo ao vivo** HEVC/H.265 1080p direto da câmera
 - 🕹️ **PTZ**: mover a câmera (cima / baixo / esquerda / direita)
-- 🔍 **Zoom** digital de 1x a 5x
+- 🔍 **Zoom** digital de 1x a 5x, ancorado no dedo, com arrasto pra olhar o canto que quiser (toque duplo volta pro 1x)
 - 🎥 **Gravação local** em MP4 (sem re-encode, sem nuvem)
 - 🔄 **Girar** a imagem em 90° (útil se a câmera estiver "de cabeça pra baixo")
 
 E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede.
-
----
-
-## Novidades da v0.8
-
-- 🛠️ **SETUP mais tolerante a firmware**: o app agora faz `DESCRIBE` e usa os
-  tracks que a câmera anuncia no SDP; se não houver SDP, tenta os URIs
-  conhecidos com duas variantes de `Transport` (com e sem `mode="PLAY"`)
-- 🎧 **Canais intercalados negociados**: passa a respeitar o `interleaved` que a
-  câmera devolve no `SETUP` (antes assumia 0/2 fixos, o que podia resultar em
-  vídeo/áudio mudos em alguns firmwares)
-- 💬 Mensagens de erro explicam o motivo (401/404/405/501) em vez de só repetir
-  a linha do RTSP
-
-## Novidades da v0.7
-
-- ✍️ **Build oficial assinado**: o APK agora sai assinado com chave de release
-  (antes era debug), gerado pelo GitHub Actions
-- 🌐 **Site oficial**: https://yoofree.qd.je/
-
-## Novidades da v0.6
-
-- 🔊 **Som da câmera**: áudio G.711 (A-law/µ-law) tocado no app, com taxa
-  adaptativa (8 ou 16 kHz, inferida pelo timestamp RTP) e botão `♪` pra
-  ligar/desligar
-- 🕹️ **PTZ verificado**: o app agora lê a resposta do `SET_PARAMETER` e avisa
-  quando a câmera recusa o comando (antes a resposta era ignorada)
-
-## Novidades da v0.5
-
-- 🤏 **Zoom com os dedos (pinch)**: no Android, aproxime/afaste dois dedos sobre o
-  vídeo para dar zoom (1x a 5x), além dos botões `−`/`+`
-- 📺 **Modo paisagem estilo player**: os controles agora são um HUD sobre o
-  vídeo; **toque na tela** para esconder/mostrar
-
-## Novidades da v0.4
-
-- 🎨 **Interface nova**: visual minimalista e mais amigável — controles redondos,
-  painel único de PTZ/zoom/gravação, status como pílula, vídeo com cantos suaves,
-  e o painel de conexão some quando você já está conectado
-- 🐛 **PTZ para baixo** mandava o comando como `DWON` (typo) — agora vai `DOWN`
-
-## Novidades da v0.3
-
-- 🔎 **Busca automática de câmera na rede**: um botão **Buscar** encontra as
-  câmeras RTSP do seu Wi‑Fi (varre a /24 local na porta 554 e confirma o
-  handshake RTSP) — não precisa mais descobrir o IP no roteador
-- A lista de câmeras encontradas aparece no app; toque no IP pra preencher
-
-## Novidades da v0.2
-
-- 🛠️ **Correção do crash ao Conectar** em alguns aparelhos (ex.: Redmi Note 12S,
-  Android 15) — o decoder HEVC agora se recupera sozinho quando o codec cai
-- 🛠️ **Câmeras com firmware novo**: resolve o `SETUP 405 Method Not Allowed`
-  tentando URIs alternativas aceitas pelo RTSP dessas câmeras
 
 ---
 
@@ -129,16 +74,19 @@ Se preferir na mão:
 ## Perguntas frequentes
 
 **Preciso da senha da câmera?**
-Não. O YooFree usa o RTSP local, que nessa linha não exige autenticação para
-`SETUP`/`PLAY`. Só o IP basta.
+Normalmente não. O RTSP local dessa linha geralmente fica aberto e só o IP basta.
+Se a sua câmera (ou um túnel/port-forward que você montou) exigir senha no RTSP
+(HTTP Digest), informe a senha no app — usuário padrão `admin`.
 
 **Fala com a nuvem da Yoosee?**
 Não. A conexão é direta (`IP:554`), na sua rede local.
 
 **Funciona fora de casa?**
-Ainda não direto pelo app — o estudo está em
+Não direto pela internet — a rota confiável é uma VPN (WireGuard/Tailscale) até
+a rede de casa; o estudo completo está em
 [docs/research/RESEARCH-REMOTE-ACCESS.md](docs/research/RESEARCH-REMOTE-ACCESS.md).
-Por enquanto use uma VPN (WireGuard/Tailscale) com a câmera na rede local.
+Com VPN (ou um túnel/port-forward), digite o IP como `ip:porta` no app e, se o
+RTSP exigir senha, informe no campo de senha.
 
 **Por que um cliente RTSP próprio?**
 Porque essas câmeras **não falam RTSP padrão**: o `DESCRIBE` responde

@@ -43,9 +43,9 @@ corrobora o veredito acima em vez de ser só opinião deste estudo.
 
 1. **Curto prazo:** documentar e recomendar VPN (WireGuard/Tailscale). Nada de
    abrir porta no roteador por padrão.
-2. **Pré-requisito técnico** caso avancemos: suportar **RTSP com Digest auth**
-   (hoje o cliente assume câmera sem senha; com senha definida o `SETUP`
-   receberia 401).
+2. ✅ **Feito (v0.9):** o cliente RTSP agora fala **HTTP Digest** — se a câmera
+   (ou um túnel/port-forward) exigir senha, basta informá-la no app (usuário
+   padrão `admin`). Também aceita `ip:porta` no campo de IP.
 3. **Médio prazo (se houver demanda):** avaliar túnel embutido (WireGuard
    userspace) com um relay simples, mantendo a câmera só na LAN.
 4. **Não faremos:** impersonar a nuvem/P2P do fabricante.
