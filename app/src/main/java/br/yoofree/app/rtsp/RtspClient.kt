@@ -375,13 +375,16 @@ class RtspClient(
         var lastKeepAlive = System.currentTimeMillis()
 
         while (running) {
+            // Keepalive por TEMPO, nao so no timeout de leitura: com video
+            // fluindo o read nunca estoura, e sem cliente->servidor o servidor
+            // corta a sessao (60s no gortsplib).
+            if (System.currentTimeMillis() - lastKeepAlive > 20_000) {
+                sendKeepAlive()
+                lastKeepAlive = System.currentTimeMillis()
+            }
             val n = try {
                 stream.read(chunk)
             } catch (_: SocketTimeoutException) {
-                if (System.currentTimeMillis() - lastKeepAlive > 20_000) {
-                    sendKeepAlive()
-                    lastKeepAlive = System.currentTimeMillis()
-                }
                 continue
             }
             if (n < 0) break
