@@ -61,6 +61,12 @@ class RtspClient(
     private var depacketizer = HevcDepacketizer()
     private var firstTs = -1L
     private var auCount = 0
+    @Volatile private var lastVideoTarget = ""
+
+    private val transports = listOf(
+        "RTP/AVP/TCP;unicast;interleaved=0-1",
+        "RTP/AVP/TCP;unicast;interleaved=0-1;mode=\"PLAY\"",
+    )
 
     // Auth Digest (RFC 2617): aprendida no primeiro 401 e reusada nas proximas
     // requisicoes. Sem senha configurada, nada e enviado (comportamento antigo).
@@ -89,63 +95,53 @@ class RtspClient(
     private fun runLoop() {
         try {
             Log.i(TAG, "conectando tcp $host:$port")
-            val s = Socket()
-            s.tcpNoDelay = true
-            s.connect(InetSocketAddress(host, port), 5000)
-            socket = s
-            input = s.getInputStream()
-            output = s.getOutputStream()
-            s.soTimeout = 5000
+            connect()
 
-            // 1) DESCRIBE: se a camera responder SDP, usamos os tracks reais
-            //    (evita chutar /track1 e tomar 405/404 de firmwares diferentes).
+            // 1) SETUP direto, SEM DESCRIBE: em firmwares Yoosee/GW (HIipCamera) o
+            //    DESCRIBE cobra auth e empoisona a conexao - depois do 401, o SETUP
+            //    leva reset. OPTIONS -> SETUP -> PLAY sem auth funciona: o video vem
+            //    em /track1 e o audio em /track2 (G.711 tambem chega multiplexado).
+            //    DESCRIBE vira plano B, so pra achar tracks de firmwares exoticas.
             var videoUrl: String? = null
             var audioUrl: String? = null
-            runCatching {
-                val (code, sdp) = describe()
-                Log.i(TAG, "DESCRIBE -> $code")
-                if (code == 200 && sdp.isNotBlank()) {
-                    val tracks = parseSdpTracks(sdp)
-                    videoUrl = tracks.video
-                    audioUrl = tracks.audio
-                    Log.i(TAG, "SDP video=$videoUrl audio=$audioUrl")
-                }
-            }.onFailure { Log.i(TAG, "DESCRIBE indisponivel: ${it.message}") }
+            val directTargets = listOf("$baseUrl/track1", baseUrl, "rtsp://$host/media/video1")
+            var (setupCode, setupResponse) = runSetup(directTargets)
 
-            // 2) SETUP do video: tracks do SDP primeiro, depois os alvos conhecidos.
-            var setupCode = 0
-            var setupResponse = ""
-            val setupTargets = (listOfNotNull(videoUrl) +
-                listOf("$baseUrl/track1", baseUrl, "rtsp://$host/media/video1")).distinct()
-            val transports = listOf(
-                "RTP/AVP/TCP;unicast;interleaved=0-1",
-                "RTP/AVP/TCP;unicast;interleaved=0-1;mode=\"PLAY\"",
-            )
-            outer@ for (target in setupTargets) {
-                for (transport in transports) {
-                    val resp = request(
-                        "SETUP $target RTSP/1.0",
-                        listOf("Transport: $transport", "User-Agent: $UA")
-                    )
-                    Log.i(TAG, "SETUP $target -> " + resp.replace("\r\n", " | "))
-                    setupResponse = resp
-                    setupCode = statusCode(resp)
-                    if (setupCode == 200) {
-                        interleaved(resp)?.let { (rtp, _) -> videoChannel = rtp }
-                        break@outer
+            if (setupCode != 200) {
+                // 2) Plano B: DESCRIBE em conexao NOVA (a atual pode ter sido fechada
+                //    pelos SETUPS recusados; e o proprio DESCRIBE pode empoisonar).
+                reconnect("SETUP direto falhou")
+                runCatching {
+                    val (code, sdp) = describe()
+                    Log.i(TAG, "DESCRIBE -> $code")
+                    if (code == 200 && sdp.isNotBlank()) {
+                        val tracks = parseSdpTracks(sdp)
+                        videoUrl = tracks.video
+                        audioUrl = tracks.audio
+                        Log.i(TAG, "SDP video=$videoUrl audio=$audioUrl")
+                    } else if ((code == 401 || code == 403) && password.isEmpty()) {
+                        // Sem o aviso aqui, o usuario so via "SETUP falhou: " vazio.
+                        throw RuntimeException(
+                            "A camera exige senha RTSP (Digest) - preencha o campo de senha e conecte de novo"
+                        )
                     }
-                    // 401/403 nao melhoram tentando outro alvo/transporte.
-                    if (setupCode == 401 || setupCode == 403) break@outer
-                    if (setupCode !in 400..499 && setupCode != 200) fail("SETUP $target", resp)
+                }.onFailure { throwIfAuthError(it); Log.i(TAG, "DESCRIBE indisponivel: ${it.message}") }
+
+                val sdpTargets = (listOfNotNull(videoUrl) + directTargets).distinct()
+                reconnect("antes do SETUP com SDP")
+                runSetup(sdpTargets).let { (code, resp) ->
+                    setupCode = code
+                    setupResponse = resp
                 }
+                if (setupCode != 200) fail("SETUP", setupResponse)
             }
-            if (setupCode != 200) fail("SETUP", setupResponse)
             session = Regex("Session:\\s*([0-9a-zA-Z]+)").find(setupResponse)?.groupValues?.get(1).orEmpty()
+            val videoTarget = lastVideoTarget
 
             // 3) Audio: trilha do SDP quando anunciada; sem SDP nenhum, chuta
-            //    /track2 (firmwares que nao respondem DESCRIBE). Com SDP presente
-            //    e sem trilha de audio, NAO chuta: SETUP em path inexistente
-            //    fecha a conexao em servidores estritos (ex.: gortsplib).
+            //    /track2 (a HIipCamera aceita: 200). Se o SETUP do audio FECHAR a
+            //    conexao (firmware estrita), reconecta e refaz so o video: o G.711
+            //    continua chegando multiplexado no canal do video.
             val audioTargets = when {
                 audioUrl != null -> listOf(audioUrl)
                 videoUrl == null -> listOf("$baseUrl/track2")
@@ -162,6 +158,15 @@ class RtspClient(
                 if (statusCode(audioResp) == 200) {
                     interleaved(audioResp)?.let { (rtp, _) -> audioChannel = rtp }
                     Log.i(TAG, "trilha de audio separada (canal $audioChannel)")
+                    break
+                }
+                if (audioResp.isEmpty()) {
+                    Log.i(TAG, "SETUP audio fechou a conexao; refazendo so o video")
+                    reconnect("apos o audio fechar a conexao")
+                    runSetup(listOf(videoTarget)).let { (code, resp) ->
+                        if (code != 200) fail("SETUP", resp)
+                        session = Regex("Session:\\s*([0-9a-zA-Z]+)").find(resp)?.groupValues?.get(1).orEmpty()
+                    }
                     break
                 }
             }
@@ -184,13 +189,77 @@ class RtspClient(
         }
     }
 
+    private fun throwIfAuthError(t: Throwable) {
+        // O aviso de senha precisa atravessar o runCatching do DESCRIBE.
+        if (t.message?.contains("exige senha RTSP") == true) throw t
+    }
+
+    private fun connect() {
+        val s = Socket()
+        s.tcpNoDelay = true
+        s.connect(InetSocketAddress(host, port), 5000)
+        socket = s
+        input = s.getInputStream()
+        output = s.getOutputStream()
+        s.soTimeout = 5000
+    }
+
+    private fun reconnect(reason: String) {
+        Log.i(TAG, "reconectando ($reason)")
+        runCatching { socket?.close() }
+        session = ""
+        connect()
+    }
+
+    /** Tenta SETUP em alvos x transportes; devolve (codigo, resposta bruta). */
+    private fun runSetup(targets: List<String>): Pair<Int, String> {
+        var code = -1
+        var resp = ""
+        outer@ for (target in targets) {
+            for (transport in transports) {
+                val r = try {
+                    request(
+                        "SETUP $target RTSP/1.0",
+                        listOf("Transport: $transport", "User-Agent: $UA")
+                    )
+                } catch (e: Exception) {
+                    // Camera fechou a conexao no meio: sem sentido tentar os
+                    // demais alvos neste socket; o plano B reconecta.
+                    Log.i(TAG, "SETUP $target: conexao caiu (${e.message})")
+                    break@outer
+                }
+                Log.i(TAG, "SETUP $target -> " + r.replace("\r\n", " | "))
+                resp = r
+                code = statusCode(r)
+                if (code == 200) {
+                    interleaved(r)?.let { (rtp, _) -> videoChannel = rtp }
+                    lastVideoTarget = target
+                    break@outer
+                }
+                // 401/403 nao melhoram tentando outro alvo/transporte. Resposta
+                // vazia (conexao fechada) segue pro proximo alvo/para o plano B.
+                if (code == 401 || code == 403) break@outer
+                if (code !in 400..499 && code != -1) fail("SETUP $target", r)
+            }
+        }
+        return code to resp
+    }
+
     private fun fail(stage: String, response: String) {
         val first = response.lineSequence().firstOrNull()?.trim().orEmpty()
-        val hint = when (statusCode(response)) {
-            401, 403 -> " (a camera exige senha no RTSP)"
-            404 -> " (esse URI de SETUP nao existe no firmware)"
-            405 -> " (firmware nao aceita SETUP nesse URI)"
-            501 -> " (firmware nao implementa SETUP)"
+        val hint = when {
+            first.isEmpty() -> when {
+                authHeader != null -> " (a camera fechou a conexao; a senha esta correta?)"
+                password.isEmpty() ->
+                    " (a camera fechou a conexao sem responder; se ela tiver senha, preencha o campo de senha)"
+                else -> " (a camera fechou a conexao sem responder)"
+            }
+            statusCode(response) == 401 || statusCode(response) == 403 ->
+                " (a camera exige senha no RTSP)"
+            statusCode(response) == 404 -> " (esse URI de SETUP nao existe no firmware)"
+            statusCode(response) == 405 -> " (firmware nao aceita SETUP nesse URI)"
+            statusCode(response) == 501 -> " (firmware nao implementa SETUP)"
+            statusCode(response) == 400 && authHeader != null -> " (senha incorreta?)"
             else -> ""
         }
         throw RuntimeException("$stage falhou: $first$hint")
