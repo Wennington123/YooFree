@@ -1,0 +1,1 @@
+Fix for Yoosee/GW cameras (HIipCamera firmware): the app sent DESCRIBE before SETUP and those cameras dropped the connection — users saw a bare "SETUP failed" error. SETUP now goes first (OPTIONS → SETUP → PLAY) and DESCRIBE is only a fallback. New error messages say when the camera requires the RTSP password.

@@ -1,0 +1,1 @@
+Conserto de conexão com câmeras Yoosee/GW (firmware HIipCamera): o app tentava DESCRIBE antes do SETUP e, nessas câmeras, isso derrubava a conexão — aparecia "SETUP falhou" sem detalhes. Agora o SETUP vai direto (OPTIONS → SETUP → PLAY) e o DESCRIBE só entra como plano B. Mensagens de erro novas dizem quando a câmera exige senha RTSP.
