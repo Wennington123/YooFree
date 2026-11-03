@@ -1,0 +1,1 @@
+Zoom that follows your fingers (pinch anchored on touch, pan, double-tap to reset), rebuilt HEVC decoder (fixes broken/stuck frames), keepalive fix so sessions no longer drop after 60 s, RTSP Digest auth + custom port for access over VPN, and a new Settings screen: system/light/dark theme, PTZ direction inversion, glossary and project support links.

@@ -1,0 +1,1 @@
+Zoom que segue os dedos (pinch ancorado no toque, arrasto e toque duplo pra voltar), decodificador HEVC refeito (fim da imagem quebrada/travada), keepalive corrigido (a sessão não cai mais aos 60 s), autenticação Digest no RTSP + IP com porta pra acesso por VPN, e nova aba de configurações: tema claro/escuro, inverter comandos PTZ, glossário e apoio ao projeto.
