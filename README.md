@@ -27,13 +27,14 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Onde pegar |
 |---|---|---|
-| **Android** 7+ | `YooFree-0.9.1.apk` (assinado) | [APK direto](../../releases/latest/download/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://komistore.app/download/) |
+| **Android** 7+ | `YooFree-0.9.1.apk` (assinado) | [APK direto](../../releases/latest/download/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://komistore.app/download/) · [RepoStore](https://repostore.in/) |
 
-> Em revisão nas lojas livres: **F-Droid** (MR em andamento), **OpenAPK** e
-> **IzzyOnDroid** — os links entram aqui assim que aprovarem. O app também
-> funciona no [Obtainium](https://github.com/ImranR98/Obtainium) apontando pro
-> repositório, e no **Komi Store** basta buscar `YooFree` (ele indexa releases
-> do GitHub).
+> **Já funcionam sem aprovação:** [Obtainium](https://github.com/ImranR98/Obtainium)
+> (toque [aqui](obtainium://app/%7B%22id%22%3A%22br.yoofree.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FWennington123%2FYooFree%22%2C%22author%22%3A%22Wennington123%22%2C%22name%22%3A%22YooFree%22%7D)
+> no celular com o app instalado), **Komi Store** e **RepoStore** — ambos
+> indexam releases do GitHub; basta buscar `YooFree`. Em revisão nas lojas
+> livres: **F-Droid** (MR em andamento), **OpenAPK** e **IzzyOnDroid** — os
+> links entram aqui assim que aprovarem.
 
 Todas as versões fazem a mesma coisa:
 
@@ -53,7 +54,8 @@ E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** 
 1. Baixe o APK direto da
    [última release](../../releases/latest/download/YooFree.apk), ou instale e
    receba as atualizações pelo [Zapstore](https://zapstore.dev/apps/br.yoofree.app)
-   (no [Komi Store](https://komistore.app/download/), busque `YooFree`).
+   (no [Komi Store](https://komistore.app/download/) e no
+   [RepoStore](https://repostore.in/), busque `YooFree`).
 2. Autorize "instalar de fontes desconhecidas" quando o Android pedir.
 3. Abra o app, toque em **Buscar** para achar a câmera na sua rede (ou digite o
    **IP da câmera**, ex.: `192.168.1.2`) e toque em **Conectar**.
