@@ -82,6 +82,17 @@ Se a sua câmera (ou um túnel/port-forward que você montou) exigir senha no RT
 **Fala com a nuvem da Yoosee?**
 Não. A conexão é direta (`IP:554`), na sua rede local.
 
+**E as gravações na nuvem (eventos de movimento)?**
+Aí entra o "premium" do app oficial: são clipes que a câmera manda pra nuvem da
+Yoosee, e a versão grátis do app deles só deixa ver alguns segundos. O YooFree
+**não acessa essa nuvem** — é serviço fechado, amarrado à conta deles, e o
+projeto é "sem nuvem" por princípio (não reimplementa nem contorna). Mods
+"desbloqueados" do app oficial são APK pirata, geralmente desatualizado e sem
+garantia nenhuma de segurança. O que o YooFree oferece no lugar: **gravação
+local ilimitada de graça** (o botão de gravar salva MP4 no próprio celular) e,
+no futuro, leitura das gravações do **cartão SD** da câmera pela rede local
+(veja o roteiro abaixo).
+
 **Funciona fora de casa?**
 Não direto pela internet — a rota confiável é uma VPN (WireGuard/Tailscale) até
 a rede de casa; o estudo completo está em
@@ -125,6 +136,9 @@ nas [issues](../../issues):
 - 🎛️ **Direções PTZ normalizadas**: inverter esquerda/direita e cima/baixo
   automaticamente quando a câmera está montada de cabeça pra baixo (como o app
   oficial faz)
+- ⏯️ **Gravações do cartão SD pela rede local**: ler os clipes gravados no
+  cartão da câmera pelo protocolo nativo (DVRIP/XMeye, porta 34567 — a mesma
+  sessão do estudo de PTZ). A nuvem do fabricante fica de fora por princípio
 - 📷 **Suporte a mais câmeras**: iCSee/XMEye (afinal, é o mesmo protocolo nativo),
   Novus/Dahua/Intelbras (SDK dahua) e afins — o RTSP de vídeo já é o mesmo caminho
 - 🔢 **Múltiplas câmeras** no mesmo app, com lista/grid

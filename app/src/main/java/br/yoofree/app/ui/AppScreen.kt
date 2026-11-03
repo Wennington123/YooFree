@@ -62,6 +62,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
@@ -815,14 +816,55 @@ private fun SettingsSheet(
 
             HorizontalDivider(color = Hairline)
 
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("YooFree v$version", color = TextHigh, style = MaterialTheme.typography.labelMedium)
                 Text(
-                    "GPL-3.0 — sem nuvem, sem conta, sem anúncios. Site: yoofree.qd.je",
+                    "GPL-3.0 — sem nuvem, sem conta, sem anúncios.",
                     color = TextLow,
                     style = MaterialTheme.typography.bodySmall,
                 )
+                LinkRow(
+                    iconRes = R.drawable.ic_globe,
+                    label = "Site oficial: yoofree.qd.je",
+                    url = "https://yoofree.qd.je/",
+                )
+                LinkRow(
+                    iconRes = R.drawable.ic_github,
+                    label = "Código-fonte: GitHub/Wennington123/YooFree",
+                    url = "https://github.com/Wennington123/YooFree",
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun LinkRow(iconRes: Int, label: String, url: String) {
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                runCatching {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                }
+            }
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Image(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(TextHigh),
+            modifier = Modifier.size(18.dp),
+        )
+        Text(
+            text = label,
+            color = Accent,
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
