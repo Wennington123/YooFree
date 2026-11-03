@@ -71,7 +71,10 @@ jobs:
         run: |
           NAME="YooFree-${RELEASE_TAG#v}.apk"
           cp "$APK_PATH" "$NAME"
-          gh release create "$RELEASE_TAG" "$NAME" \
+          # nome fixo: o site aponta direto pra
+          # releases/latest/download/YooFree.apk
+          cp "$APK_PATH" "YooFree.apk"
+          gh release create "$RELEASE_TAG" "$NAME" "YooFree.apk" \
             --target "$GITHUB_SHA" \
             --title "YooFree ${RELEASE_TAG#v}" \
             --notes "APK Android ${RELEASE_TAG} (assinado) gerado pelo workflow build, commit ${GITHUB_SHA:0:7}."

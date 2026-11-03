@@ -68,6 +68,21 @@ h2 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.01em; }
 .card p { margin: 0; color: var(--muted); font-size: 14px; }
 .icon { font-size: 22px; line-height: 1; }
 
+/* Lojas onde o YooFree está disponível */
+.stores { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.store {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--panel); border: 1px solid var(--hairline);
+  border-radius: var(--radius); padding: 14px 16px;
+  color: var(--text);
+}
+.store:hover { border-color: var(--accent); text-decoration: none; }
+.store img { width: 34px; height: 34px; flex: none; }
+.store h3 { margin: 0 0 2px; font-size: 15px; }
+.store p { margin: 0; color: var(--muted); font-size: 13px; }
+.store.soon { opacity: .55; }
+.store.soon:hover { border-color: var(--hairline); }
+
 .install { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 pre {
   background: #070a0f; border: 1px solid var(--hairline);
