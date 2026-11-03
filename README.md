@@ -22,9 +22,14 @@ sem telemetria**. Só você e a sua câmera.
 
 ## Versões
 
-| Plataforma | Pacote | Como instalar |
+| Plataforma | Pacote | Onde pegar |
 |---|---|---|
-| **Android** 7+ | `YooFree-0.9.apk` (assinado) | baixe na aba [Releases](../../releases) e instale |
+| **Android** 7+ | `YooFree-0.9.1.apk` (assinado) | [Releases](../../releases) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) |
+
+> Em revisão nas lojas livres: **F-Droid** (MR em andamento), **OpenAPK** e
+> **IzzyOnDroid** — os links entram aqui assim que aprovarem. O app também
+> funciona no [Obtainium](https://github.com/ImranR98/Obtainium) apontando pro
+> repositório.
 
 Todas as versões fazem a mesma coisa:
 
@@ -41,7 +46,8 @@ E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** 
 
 ## Android
 
-1. Baixe o APK da versão atual na aba [Releases](../../releases).
+1. Baixe o APK da versão atual na aba [Releases](../../releases) — ou instale e
+   receba as atualizações pelo [Zapstore](https://zapstore.dev/apps/br.yoofree.app).
 2. Autorize "instalar de fontes desconhecidas" quando o Android pedir.
 3. Abra o app, toque em **Buscar** para achar a câmera na sua rede (ou digite o
    **IP da câmera**, ex.: `192.168.1.2`) e toque em **Conectar**.
@@ -75,9 +81,11 @@ Se preferir na mão:
 ## Perguntas frequentes
 
 **Preciso da senha da câmera?**
-Normalmente não. O RTSP local dessa linha geralmente fica aberto e só o IP basta.
-Se a sua câmera (ou um túnel/port-forward que você montou) exigir senha no RTSP
-(HTTP Digest), informe a senha no app — usuário padrão `admin`.
+Normalmente não. O YooFree conecta sem senha na maioria das firmwares (o SETUP
+vai direto, sem DESCRIBE). Algumas firmwares desafiam o `DESCRIBE` e fecham a
+conexão se o SETUP chegar sem autenticação — nessas, informe a senha no app
+(HTTP Digest, usuário padrão `admin`). Se aparecer "a câmera fechou a conexão",
+tente preencher o campo de senha.
 
 **Fala com a nuvem da Yoosee?**
 Não. A conexão é direta (`IP:554`), na sua rede local.
