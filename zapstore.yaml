@@ -1,0 +1,30 @@
+repository: https://github.com/Wennington123/YooFree
+name: YooFree
+summary: Open, ad-free client for Yoosee/GW IP cameras over LAN RTSP
+description: |
+  YooFree talks directly to Yoosee/GW (Gwell) IP cameras on the local network
+  (RTSP :554): no cloud, no account, no ads, no telemetry.
+
+  These cameras do not speak standard RTSP — DESCRIBE returns 400 when auth is
+  present — so generic players cannot read them. YooFree implements the minimal
+  handshake the camera accepts, depacketizes HEVC by hand and muxes recordings
+  with a custom MP4 writer.
+
+  Features: live HEVC/H.265 1080p, PTZ, finger-anchored digital zoom (1x-5x)
+  with pan and double-tap, local MP4 recording, camera audio (G.711), 90°
+  rotation, landscape HUD, automatic camera discovery, RTSP Digest auth and
+  custom ports (access over VPN).
+
+  Settings include light/dark/system theme, PTZ direction inversion, a glossary
+  and project support links. Roadmap: SD-card playback via DVRIP/XMeye.
+
+  Permissions: INTERNET, ACCESS_NETWORK_STATE, ACCESS_WIFI_STATE — nothing
+  else. Cleartext traffic is intentional and stays on the LAN.
+license: GPL-3.0-or-later
+website: https://yoofree.qd.je/
+tags: [camera, rtsp, surveillance, hevc]
+icon: fastlane/metadata/android/en-US/images/icon.png
+images:
+  - fastlane/metadata/android/en-US/images/phoneScreenshots/1.png
+  - fastlane/metadata/android/en-US/images/phoneScreenshots/2.png
+metadata_sources: [fastlane, github]
