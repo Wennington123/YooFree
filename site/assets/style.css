@@ -138,3 +138,6 @@ footer {
 footer a { color: var(--muted); }
 footer a:hover { color: var(--text); }
 footer nav { margin-bottom: 6px; }
+
+.shots { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--hairline); }
