@@ -21,6 +21,13 @@ sem telemetria**. Só você e a sua câmera.
 
 🌐 **Site oficial:** https://yoofree.qd.je/
 
+<p align="center">
+  <img src="site/assets/shots/promo-1.png" width="23%" alt="Vídeo 1080p direto da câmera">
+  <img src="site/assets/shots/promo-2.png" width="23%" alt="Zoom digital de 1x a 5x">
+  <img src="site/assets/shots/promo-3.png" width="23%" alt="Gravação local ilimitada">
+  <img src="site/assets/shots/promo-4.png" width="23%" alt="Sem nuvem, sem conta, sem anúncio">
+</p>
+
 ---
 
 ## Versões
