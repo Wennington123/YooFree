@@ -33,7 +33,9 @@ sem telemetria**. Só você e a sua câmera.
 > (toque [aqui](obtainium://app/%7B%22id%22%3A%22br.yoofree.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FWennington123%2FYooFree%22%2C%22author%22%3A%22Wennington123%22%2C%22name%22%3A%22YooFree%22%7D)
 > no celular com o app instalado), **Komi Store** e **RepoStore** — ambos
 > indexam releases do GitHub; basta buscar `YooFree`. Em revisão nas lojas
-> livres: **F-Droid** (MR em andamento), **OpenAPK** e **IzzyOnDroid** — os
+> livres: **F-Droid**
+> ([MR !54850](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/54850),
+> pipeline verde), **OpenAPK** e **IzzyOnDroid** — os
 > links entram aqui assim que aprovarem.
 
 Todas as versões fazem a mesma coisa:
