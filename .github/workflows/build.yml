@@ -77,9 +77,10 @@ jobs:
           # releases/latest/download/YooFree.apk
           cp "$RELEASE_APK" "YooFree.apk"
           cp "$DEBUG_APK" "$NAME_DEBUG"
+          NOTES=$(printf '%s\n- %s: assinada (instalar por cima da anterior)\n- %s: debug (para diagnostico, nao atualiza a assinada)' \
+            "APK Android ${RELEASE_TAG} gerado pelo workflow build, commit ${GITHUB_SHA:0:7}" \
+            "$NAME" "$NAME_DEBUG")
           gh release create "$RELEASE_TAG" "$NAME" "YooFree.apk" "$NAME_DEBUG" \
             --target "$GITHUB_SHA" \
             --title "YooFree ${RELEASE_TAG#v}" \
-            --notes "APK Android ${RELEASE_TAG} gerado pelo workflow build, commit ${GITHUB_SHA:0:7}.
-- $NAME: assinada (instalar por cima da anterior)
-- $NAME_DEBUG: debug (para diagnostico, nao atualiza a assinada)"
+            --notes "$NOTES"
