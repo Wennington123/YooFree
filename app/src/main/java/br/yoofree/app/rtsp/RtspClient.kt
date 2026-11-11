@@ -1,6 +1,7 @@
 package br.yoofree.app.rtsp
 
 import android.util.Log
+import br.yoofree.app.diag.YooLog
 import java.io.InputStream
 import java.io.OutputStream
 import java.math.BigInteger
@@ -176,15 +177,18 @@ class RtspClient(
             request("PLAY $baseUrl RTSP/1.0", listOf("User-Agent: $UA"), readResponse = false)
 
             listener.onConnected()
+            YooLog.add("INFO", "RTSP", "conectado (SETUP OK, PLAY enviado)")
             streamLoop()
         } catch (t: Throwable) {
             Log.e(TAG, "erro: ${t.message}", t)
+            YooLog.add("ERROR", "RTSP", "erro: ${t.message}")
             if (running) listener.onError(t.message ?: t.javaClass.simpleName, t)
         } finally {
             runCatching { request("TEARDOWN $baseUrl RTSP/1.0", emptyList(), readResponse = false) }
             runCatching { socket?.close() }
             running = false
             Log.i(TAG, "sessao encerrada")
+            YooLog.add("INFO", "RTSP", "sessao encerrada")
             listener.onDisconnected()
         }
     }
@@ -458,7 +462,6 @@ class RtspClient(
             }
             if (n < 0) break
             if (n == 0) continue
-
             val data = if (pending.isEmpty()) chunk.copyOf(n) else pending + chunk.copyOf(n)
             var off = 0
             while (off + 4 <= data.size) {
@@ -490,6 +493,7 @@ class RtspClient(
                         // derrubar o stream por isso e pior do que perder um ping.
                         Log.w(TAG, "keepalive respondeu $code; seguindo")
                     } else if (code != null && code >= 400) {
+                        YooLog.add("ERROR", "RTSP", "camera respondeu: $firstLine")
                         throw RuntimeException("camera respondeu: $firstLine")
                     }
                     off = end

@@ -331,8 +331,11 @@ private fun VideoSurface(
                         override fun onSurfaceTextureSizeChanged(st: SurfaceTexture, w: Int, h: Int) {}
 
                         override fun onSurfaceTextureDestroyed(st: SurfaceTexture): Boolean {
-                            onSurfaceReady(false)
-                            vm.setSurface(null)
+                            // NAO libera o codec aqui: na rotacao/recomposicao o
+                            // TextureView destroi o antigo ANTES de publicar o novo;
+                            // se matarmos o decoder nesse instante, a tela fica preta
+                            // mesmo com stream rodando. O novo onSurfaceTextureAvailable
+                            // ja sobrescreve a surface por dentro do decoder sem parar.
                             return true
                         }
 
@@ -813,6 +816,45 @@ private fun SettingsSheet(
                     }
                 }
             }
+
+            HorizontalDivider(color = Hairline)
+
+            Text("Diagnóstico", color = TextHigh, style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Se a câmera travar ou a imagem ficar preta, envie o relatório: " +
+                    "ele abre uma issue no GitHub já preenchida com o log dos " +
+                    "eventos do app (sem dados pessoais — senha nunca é incluída).",
+                color = TextLow,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            OutlinedButton(
+                onClick = {
+                    val report = br.yoofree.app.diag.YooLog.buildReport(
+                        context,
+                        mapOf(
+                            "Conectado" to vm.connected.toString(),
+                            "Gravando" to vm.recording.toString(),
+                        ),
+                    )
+                    val url = android.net.Uri.parse(
+                        "https://github.com/Wennington123/YooFree/issues/new"
+                    ).buildUpon()
+                        .appendQueryParameter(
+                            "title",
+                            "[app] Relatório automático v" +
+                                context.packageManager.getPackageInfo(context.packageName, 0).versionName,
+                        )
+                        .appendQueryParameter("body", report)
+                        .build()
+                    runCatching {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, url))
+                    }.onFailure {
+                        Toast.makeText(context, "Sem navegador para abrir a issue", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Enviar relatório de falhas") }
 
             HorizontalDivider(color = Hairline)
 

@@ -4,6 +4,7 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.util.Log
 import android.view.Surface
+import br.yoofree.app.diag.YooLog
 import java.nio.ByteBuffer
 import java.util.ArrayDeque
 
@@ -60,6 +61,7 @@ class VideoDecoder(
         synchronized(lock) {
             if (surface === newSurface) return
             surface = newSurface
+            YooLog.add("INFO", "DEC", if (newSurface != null) "surface anexada" else "surface removida")
             releaseCodec()
             firstFrame = true
             waitingKeyframe = true
@@ -85,8 +87,14 @@ class VideoDecoder(
                 }
             }
             // CSD mudou no meio do stream (camera reiniciou/resolveu trocar):
-            // descarta o codec; reconfigura com o CSD novo abaixo.
-            if (newCsd && configured) releaseCodec()
+            // descarta o codec; reconfigura com o CSD novo abaixo. Enquanto o
+            // codec novo nao decodifica um IDR, imagem nova vai sair toda errada
+            // (P-frame sem referencia) -> marca espera por keyframe.
+            if (newCsd && configured) {
+                releaseCodec()
+                waitingKeyframe = true
+                waitingSince = System.currentTimeMillis()
+            }
             if (!configured && surface != null && vps != null && sps != null && pps != null) {
                 configureInternal()
             }
@@ -94,23 +102,32 @@ class VideoDecoder(
             if (waitingKeyframe) {
                 val waited = System.currentTimeMillis() - waitingSince
                 if (!keyframe && waited < KEYFRAME_TIMEOUT_MS) return
-                if (!keyframe) Log.w(TAG, "sem IDR em ${waited}ms; aceitando frames sem referencia")
+                if (!keyframe) {
+                    Log.w(TAG, "sem IDR em ${waited}ms; aceitando frames sem referencia")
+                    YooLog.add("WARN", "DEC", "sem IDR em ${waited}ms; aceitando P-frames sem referencia")
+                }
                 waitingKeyframe = false
                 queue.clear()
             } else if (keyframe) {
                 queue.clear() // IDR novo: joga fora fila atrasada
             }
+            // Backpressure: fila quase cheia -> descarta NALs novos SEM zerar a
+            // fila nem exigir IDR. Preserva a continuidade do decode; o
+            // drainOutputs (chamado sempre, mesmo com fila vazia) esvazia aos poucos.
             if (queue.size >= MAX_QUEUE) {
-                Log.w(TAG, "fila cheia (${queue.size}); volta a renderizar no proximo IDR")
-                waitingKeyframe = true
-                waitingSince = System.currentTimeMillis()
-                queue.clear()
+                if (System.currentTimeMillis() - lastOverflowLog > 5_000L) {
+                    Log.w(TAG, "fila cheia (${queue.size}); descartando quadros ate drenar")
+                    YooLog.add("WARN", "DEC", "fila cheia (${queue.size}); descartando quadros")
+                    lastOverflowLog = System.currentTimeMillis()
+                }
                 return
             }
             queue.addLast(buildAnnexB(nals) to ptsUs)
             lock.notifyAll()
         }
     }
+
+    private var lastOverflowLog = 0L
 
     private fun buildAnnexB(nals: List<ByteArray>): ByteArray {
         var size = 0
@@ -142,6 +159,7 @@ class VideoDecoder(
             codec = null
             configured = false
             Log.e(TAG, "falha ao configurar", t)
+            YooLog.add("ERROR", "DEC", "falha ao configurar codec: ${t.message}")
             onError("Falha ao configurar decodificador: ${t.message}")
         }
     }
@@ -164,18 +182,21 @@ class VideoDecoder(
                 }
 
                 try {
+                    // Sempre drena a saida primeiro: evita acumulo de quadros
+                    // prontos no codec enquanto a fila de entrada esvazia
+                    // (em uso longo sem isso o decodificador afunda).
+                    drainOutputs(c, info)
                     if (queue.isEmpty()) {
-                        // Sem trabalho: drena a saida e espera, em vez de encher o
-                        // codec de buffers de entrada vazios (gastava CPU a toa).
-                        drainOutputs(c, info)
                         lock.wait(10)
                     } else {
                         runDecodeCycle(c, info)
+                        drainOutputs(c, info)
                     }
                 } catch (e: IllegalStateException) {
                     // Codec em estado Released (morreu ou foi liberado por outro fluxo):
                     // descarta o codec; o proximo feed com CSD reconfigura do zero.
                     Log.e(TAG, "MediaCodec em estado invalido, liberando para reconfigurar", e)
+                    YooLog.add("ERROR", "DEC", "MediaCodec estado invalido: ${e.message}")
                     releaseCodec()
                     waitingKeyframe = true
                     waitingSince = System.currentTimeMillis()
@@ -213,6 +234,7 @@ class VideoDecoder(
                 outIndex >= 0 -> {
                     if (firstFrame) {
                         Log.i(TAG, "primeiro frame decodificado")
+                        YooLog.add("INFO", "DEC", "primeiro frame decodificado")
                         firstFrame = false
                     }
                     runCatching { c.releaseOutputBuffer(outIndex, true) }

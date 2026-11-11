@@ -130,3 +130,4 @@ class CameraSession(
         if (!sawError) onState("Desconectado")
     }
 }
+

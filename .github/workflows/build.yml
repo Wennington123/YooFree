@@ -42,19 +42,20 @@ jobs:
             echo "YOOFREE_STORE_FILE=$RUNNER_TEMP/yoofree-release.jks" >> "$GITHUB_ENV"
           fi
 
-      - name: Build APK
+      - name: Build APKs (release + debug)
         env:
           YOOFREE_STORE_PASSWORD: ${{ secrets.YOOFREE_STORE_PASSWORD }}
           YOOFREE_KEY_ALIAS: ${{ secrets.YOOFREE_KEY_ALIAS }}
           YOOFREE_KEY_PASSWORD: ${{ secrets.YOOFREE_KEY_PASSWORD }}
         run: |
           if [ -n "$YOOFREE_STORE_FILE" ]; then
-            ./gradlew assembleRelease --no-daemon --stacktrace
-            echo "APK_PATH=app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_ENV"
+            ./gradlew assembleRelease assembleDebug --no-daemon --stacktrace
+            echo "RELEASE_APK=app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_ENV"
           else
             ./gradlew assembleDebug --no-daemon --stacktrace
-            echo "APK_PATH=app/build/outputs/apk/debug/app-debug.apk" >> "$GITHUB_ENV"
+            echo "RELEASE_APK=app/build/outputs/apk/debug/app-debug.apk" >> "$GITHUB_ENV"
           fi
+          echo "DEBUG_APK=app/build/outputs/apk/debug/app-debug.apk" >> "$GITHUB_ENV"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -63,18 +64,22 @@ jobs:
           path: app/build/outputs/apk/**/*.apk
           if-no-files-found: error
 
-      - name: Publish APK to release
+      - name: Publish APKs to release
         if: inputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
           NAME="YooFree-${RELEASE_TAG#v}.apk"
-          cp "$APK_PATH" "$NAME"
+          NAME_DEBUG="YooFree-${RELEASE_TAG#v}-debug.apk"
+          cp "$RELEASE_APK" "$NAME"
           # nome fixo: o site aponta direto pra
           # releases/latest/download/YooFree.apk
-          cp "$APK_PATH" "YooFree.apk"
-          gh release create "$RELEASE_TAG" "$NAME" "YooFree.apk" \
+          cp "$RELEASE_APK" "YooFree.apk"
+          cp "$DEBUG_APK" "$NAME_DEBUG"
+          gh release create "$RELEASE_TAG" "$NAME" "YooFree.apk" "$NAME_DEBUG" \
             --target "$GITHUB_SHA" \
             --title "YooFree ${RELEASE_TAG#v}" \
-            --notes "APK Android ${RELEASE_TAG} (assinado) gerado pelo workflow build, commit ${GITHUB_SHA:0:7}."
+            --notes "APK Android ${RELEASE_TAG} gerado pelo workflow build, commit ${GITHUB_SHA:0:7}.
+- $NAME: assinada (instalar por cima da anterior)
+- $NAME_DEBUG: debug (para diagnostico, nao atualiza a assinada)"
