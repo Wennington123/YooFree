@@ -30,10 +30,10 @@ android {
         applicationId = "br.yoofree.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 11
-        versionName = "1.0.6"
-        buildConfigField("String", "VERSION_NAME", "\"1.0.6\"")
-        buildConfigField("int", "VERSION_CODE", "11")
+        versionCode = 12
+        versionName = "1.0.7"
+        buildConfigField("String", "VERSION_NAME", "\"1.0.7\"")
+        buildConfigField("int", "VERSION_CODE", "12")
     }
 
     signingConfigs {
@@ -49,7 +49,11 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             if (hasReleaseKey) signingConfig = signingConfigs.getByName("release")
         }
     }
