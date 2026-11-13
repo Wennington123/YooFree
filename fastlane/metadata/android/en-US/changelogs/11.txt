@@ -1,0 +1,1 @@
+Fix: video freeze/black screen during long viewing sessions, plus optional crash reporting that opens a pre-filled issue on GitHub.
