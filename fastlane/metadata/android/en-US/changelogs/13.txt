@@ -1,0 +1,1 @@
+Housekeeping for F-Droid: the Play-specific 'Dependency metadata' block is no longer embedded in the APK signature block. No behavior change.
