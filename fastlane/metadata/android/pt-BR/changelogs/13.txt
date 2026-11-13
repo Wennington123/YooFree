@@ -1,0 +1,1 @@
+Ajuste pro F-Droid: o bloco 'Dependency metadata' (específico do Play) não é mais embutido na assinatura do APK. Nenhuma mudança de comportamento.
