@@ -1,0 +1,1 @@
+Code shrinking (R8) enabled: smaller APK, same features. No behavior change.
