@@ -1,0 +1,1 @@
+Minificação de código (R8) ativada: APK menor, mesmas funções. Nenhuma mudança de comportamento.
