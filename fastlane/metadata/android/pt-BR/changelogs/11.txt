@@ -1,0 +1,1 @@
+Conserto: imagem travada/tela preta em sessões longas de visualização, além de relatório opcional de falhas que abre uma issue pré-preenchida no GitHub.
