@@ -26,14 +26,21 @@ android {
     namespace = "br.yoofree.app"
     compileSdk = 34
 
+    // Sem bloco "Dependency metadata" no APK (so serve ao Google Play e
+    // reprovado pelo scanner do F-Droid para builds reprodutiveis).
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     defaultConfig {
         applicationId = "br.yoofree.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 12
-        versionName = "1.0.7"
-        buildConfigField("String", "VERSION_NAME", "\"1.0.7\"")
-        buildConfigField("int", "VERSION_CODE", "12")
+        versionCode = 13
+        versionName = "1.0.8"
+        buildConfigField("String", "VERSION_NAME", "\"1.0.8\"")
+        buildConfigField("int", "VERSION_CODE", "13")
     }
 
     signingConfigs {
