@@ -349,7 +349,7 @@ class RtspClient(
      * e reenvia a mesma requisicao uma vez.
      */
     private fun request(line: String, headers: List<String>, readResponse: Boolean = true): String {
-        val first = send(line, headers)
+        val first = send(line, headers, readResponse)
         if (!readResponse) return ""
         if (statusCode(first) == 401 && password.isNotEmpty()) {
             val challenge = responseHeader(first, "WWW-Authenticate")?.trim()
@@ -365,7 +365,7 @@ class RtspClient(
         return first
     }
 
-    private fun send(line: String, headers: List<String>): String {
+    private fun send(line: String, headers: List<String>, readResponse: Boolean = true): String {
         synchronized(writeLock) {
             cseq += 1
             lastRequestCseq = cseq
@@ -382,7 +382,10 @@ class RtspClient(
             output?.write(sb.toString().toByteArray(Charsets.US_ASCII))
             output?.flush()
         }
-        return readHeader()
+        // Sem leitura aqui com readResponse=false: a HIipCamera responde cru e
+        // as vezes ja comecou a mandar video - readHeader comeria frames como
+        // texto e dessincronizaria o parser (imagem verde, lixo no log).
+        return if (readResponse) readHeader() else ""
     }
 
     /** Monta o header Authorization: Digest para o metodo/URI da requisicao. */
@@ -491,7 +494,15 @@ class RtspClient(
                     if (end < 0) break
                     val text = String(data, off, end - off, Charsets.US_ASCII)
                     val firstLine = text.lineSequence().firstOrNull().orEmpty()
-                    Log.i(TAG, "resp -> " + text.replace("\r\n", " | "))
+                    // Resposta cru misturada com video sai binaria: nao despeja
+                    // lixo no logcat (so a primeira linha + tamanho).
+                    val imprimivel = text.none { it < ' ' && it != '\r' && it != '\n' && it != '\t' }
+                    if (imprimivel) {
+                        Log.i(TAG, "resp -> " + text.replace("\r\n", " | "))
+                    } else {
+                        Log.i(TAG, "resp binaria (${end - off}B) ate CSeq: " +
+                            Regex("CSeq:\\s*(\\d+)").find(text)?.groupValues?.get(1))
+                    }
                     val code = Regex("RTSP/\\d\\.\\d (\\d{3})").find(firstLine)
                         ?.groupValues?.get(1)?.toIntOrNull()
                     val respCseq = Regex("CSeq:\\s*(\\d+)", RegexOption.IGNORE_CASE).find(text)
