@@ -192,11 +192,13 @@ class VideoDecoder(
                         runDecodeCycle(c, info)
                         drainOutputs(c, info)
                     }
-                } catch (e: IllegalStateException) {
-                    // Codec em estado Released (morreu ou foi liberado por outro fluxo):
-                    // descarta o codec; o proximo feed com CSD reconfigura do zero.
-                    Log.e(TAG, "MediaCodec em estado invalido, liberando para reconfigurar", e)
-                    YooLog.add("ERROR", "DEC", "MediaCodec estado invalido: ${e.message}")
+                } catch (e: Exception) {
+                    // Codec morreu ou entrada invalida (ex.: BufferOverflow de um
+                    // AU corrompido): SEM esse catch amplo a thread do decoder
+                    // morre calada e a tela congela no ultimo quadro, sem log.
+                    // Descarta o codec; o proximo feed com CSD reconfigura do zero.
+                    Log.e(TAG, "decoder falhou, liberando para reconfigurar", e)
+                    YooLog.add("ERROR", "DEC", "decoder: ${e.javaClass.simpleName}: ${e.message}")
                     releaseCodec()
                     waitingKeyframe = true
                     waitingSince = System.currentTimeMillis()
@@ -214,8 +216,15 @@ class VideoDecoder(
                 if (input != null) {
                     input.clear()
                     if (item != null) {
-                        input.put(item.first)
-                        c.queueInputBuffer(inIndex, 0, item.first.size, item.second, 0)
+                        if (item.first.size > input.capacity()) {
+                            // AU maior que o buffer de entrada (nal lixo pos-desync):
+                            // descarta em vez de estourar o put e matar o decoder.
+                            Log.w(TAG, "AU ${item.first.size}B > buffer ${input.capacity()}B; descartando")
+                            YooLog.add("WARN", "DEC", "AU grande demais (${item.first.size}B); descartado")
+                        } else {
+                            input.put(item.first)
+                            c.queueInputBuffer(inIndex, 0, item.first.size, item.second, 0)
+                        }
                     } else {
                         c.queueInputBuffer(inIndex, 0, 0, 0, 0)
                     }

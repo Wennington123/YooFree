@@ -49,10 +49,10 @@ jobs:
           YOOFREE_KEY_PASSWORD: ${{ secrets.YOOFREE_KEY_PASSWORD }}
         run: |
           if [ -n "$YOOFREE_STORE_FILE" ]; then
-            ./gradlew assembleRelease assembleDebug --no-daemon --stacktrace
+            ./gradlew testDebugUnitTest assembleRelease assembleDebug --no-daemon --stacktrace
             echo "RELEASE_APK=app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_ENV"
           else
-            ./gradlew assembleDebug --no-daemon --stacktrace
+            ./gradlew testDebugUnitTest assembleDebug --no-daemon --stacktrace
             echo "RELEASE_APK=app/build/outputs/apk/debug/app-debug.apk" >> "$GITHUB_ENV"
           fi
           echo "DEBUG_APK=app/build/outputs/apk/debug/app-debug.apk" >> "$GITHUB_ENV"

@@ -63,6 +63,8 @@ class RtspClient(
     private var firstTs = -1L
     private var auCount = 0
     @Volatile private var lastVideoTarget = ""
+    /** Ultimo access unit de video recebido (0 = nenhum ainda). */
+    @Volatile private var lastAuMs = 0L
 
     private val transports = listOf(
         "RTP/AVP/TCP;unicast;interleaved=0-1",
@@ -455,6 +457,14 @@ class RtspClient(
                 sendKeepAlive()
                 lastKeepAlive = System.currentTimeMillis()
             }
+            // Video comecou e parou de chegar com o TCP vivo: tela congela no
+            // ultimo quadro sem nenhum outro sintoma. Deixa isso no relatorio.
+            if (auCount > 0 && System.currentTimeMillis() - lastAuMs > 10_000) {
+                val secs = (System.currentTimeMillis() - lastAuMs) / 1000
+                Log.w(TAG, "sem video ha ${secs}s (conexao viva, sem dados)")
+                YooLog.add("WARN", "RTSP", "sem video ha ${secs}s (conexao viva, sem dados)")
+                lastAuMs = System.currentTimeMillis()
+            }
             val n = try {
                 stream.read(chunk)
             } catch (_: SocketTimeoutException) {
@@ -538,6 +548,7 @@ class RtspClient(
 
         val unit = depacketizer.onRtpPayload(payload, payloadLen, marker, ts) ?: return
         if (auCount++ == 0) Log.i(TAG, "primeiro access unit recebido (${unit.nals.size} NALs)")
+        lastAuMs = System.currentTimeMillis()
 
         if (firstTs < 0) firstTs = unit.rtpTimestamp
         var delta = unit.rtpTimestamp - firstTs

@@ -49,8 +49,15 @@ class HevcDepacketizer {
                     fu.write(h0)
                     fu.write(payload[1].toInt())
                 }
-                if (length > 3) fu.write(payload, 3, length - 3)
-                if (end) {
+                val coletando = start || fu.size() > 0
+                if (!coletando) {
+                    // Perdemos o primeiro fragmento (dessincronizou): descartar o
+                    // pedaco. Acumular sem o start geraria NAL sem header e, no
+                    // pior caso, um AU gigante que estoura o buffer do MediaCodec.
+                } else if (length > 3) {
+                    fu.write(payload, 3, length - 3)
+                }
+                if (end && fu.size() > 0) {
                     au.add(fu.toByteArray())
                     fu = ByteArrayOutputStream()
                 }
