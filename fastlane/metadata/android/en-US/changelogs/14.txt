@@ -1,0 +1,1 @@
+Fix black/frozen video screen (issue #5): the decoder no longer dies silently and now logs the first decode errors. RTSP sessions now send keepalive pings every 10 s so streams no longer die after ~15-20 s, and a parser desync when send() skipped reading the response was fixed (with unit tests for the HEVC depacketizer).
