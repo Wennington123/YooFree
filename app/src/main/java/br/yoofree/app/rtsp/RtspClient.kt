@@ -452,8 +452,9 @@ class RtspClient(
         while (running) {
             // Keepalive por TEMPO, nao so no timeout de leitura: com video
             // fluindo o read nunca estoura, e sem cliente->servidor o servidor
-            // corta a sessao (60s no gortsplib).
-            if (System.currentTimeMillis() - lastKeepAlive > 20_000) {
+            // corta a sessao (60s no gortsplib). Nas HIipCamera o stream de
+            // video para em ~15-20s sem ping (issue #5), entao 20s era tarde.
+            if (System.currentTimeMillis() - lastKeepAlive > 10_000) {
                 sendKeepAlive()
                 lastKeepAlive = System.currentTimeMillis()
             }
