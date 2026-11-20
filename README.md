@@ -34,7 +34,7 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Onde pegar |
 |---|---|---|
-| **Android** 7+ | `YooFree-0.9.1.apk` (assinado) | [APK direto](../../releases/latest/download/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://github-store.org/app?repo=Wennington123/YooFree) · [RepoStore](https://repostore.in/) |
+| **Android** 7+ | `YooFree-1.0.10.apk` (assinado) | [APK direto](../../releases/latest/download/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://github-store.org/app?repo=Wennington123/YooFree) · [RepoStore](https://repostore.in/) |
 
 > **Já funcionam sem aprovação:** [Obtainium](https://github.com/ImranR98/Obtainium)
 > (toque [aqui](obtainium://app/%7B%22id%22%3A%22br.yoofree.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FWennington123%2FYooFree%22%2C%22author%22%3A%22Wennington123%22%2C%22name%22%3A%22YooFree%22%7D)
@@ -53,6 +53,7 @@ Todas as versões fazem a mesma coisa:
 - 🔍 **Zoom** digital de 1x a 5x, ancorado no dedo, com arrasto pra olhar o canto que quiser (toque duplo volta pro 1x)
 - 🎥 **Gravação local** em MP4 (sem re-encode, sem nuvem)
 - 🔄 **Girar** a imagem em 90° (útil se a câmera estiver "de cabeça pra baixo")
+- 💡 **Tela sempre ativa** enquanto assiste — não apaga por inatividade durante a transmissão
 - 🎛️ **Configurações**: tema (sistema/claro/escuro), inverter comandos PTZ, glossário dos termos e apoio ao projeto
 
 E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede.
@@ -241,6 +242,45 @@ YOOFREE_KEY_PASSWORD=...
 No CI, os mesmos valores vêm de secrets (`YOOFREE_KEYSTORE_BASE64`,
 `YOOFREE_STORE_PASSWORD`, `YOOFREE_KEY_ALIAS`, `YOOFREE_KEY_PASSWORD`) e o build
 cai para debug se eles não existirem.
+
+---
+
+## Testes locais (Waydroid)
+
+Ambiente de teste no desktop (sem celular físico), montado em 2026-11:
+
+- **Waydroid** (container LXC, Android 13 vanilla, `waydroid init -s VANILLA`),
+  UI via `cage waydroid show-full-ui`. Janela em modo retrato:
+  `waydroid prop set persist.waydroid.width 540` + `height 1200`.
+- **Rede**: o DHCP do Waydroid é bugado ([#2272](https://github.com/waydroid/waydroid/issues/2272),
+  [#2395](https://github.com/waydroid/waydroid/issues/2395)) — o container perde
+  IP/rota a cada boot. O script `/usr/local/bin/waydroid-netfix.sh` aplica
+  IP/rota/DNS estáticos (`waydroid-netfix.sh -t` aplica na hora; sem argumentos
+  roda como daemon re-aplicando a cada boot). Também vale
+  `suspend_action = none` no `/var/lib/waydroid/waydroid.cfg` (o freeze do
+  container derruba a rede e apaga a tela).
+- **Câmera simulada**: `mediamtx` + `ffmpeg` servem um stream sintético que o
+  app enxerga como câmera (usar sempre conteúdo simulado, nunca vídeo real):
+
+  ```bash
+  printf 'paths:\n  onvif1:\n' > mm.yml   # config mínima do mediamtx
+  mediamtx mm.yml            # porta 8554
+  ffmpeg -re -stream_loop -1 -f lavfi -i "testsrc2=size=640x360:rate=25" \
+    -c:v libx264 -profile:v baseline -tune zerolatency -g 25 \
+    -vf "drawtext=text='DEMO':fontsize=60:fontcolor=white:x=(w-tw)/2:y=h/2-th/2" \
+    -an -f rtsp rtsp://127.0.0.1:8554/onvif1
+  ```
+
+  No app: digitar `192.168.240.1:8554` no campo IP (o app monta
+  `rtsp://<ip>:<porta>/onvif1`; sem DNS no container, sempre por IP).
+- **Limitações**: DNS dentro do Android 13 não funciona (resolver via binder não
+  aceita config manual; ndc não existe mais) — tudo por IP. `screencap` sai do
+  container via `base64` (`waydroid shell -- base64 /sdcard/... | base64 -d`).
+- **Screenshots de loja**: skill `app-store-screenshots` (ParthJadhav, 8k★) já
+  clonada em `~/.commandcode/skills/` — scaffalda editor Next.js, gera decks
+  Android (1080×1920) e feature graphic (1024×500). Pendente: rodar o scaffold,
+  capturar telas do app no Waydroid, exportar e atualizar
+  `site/assets/shots/promo-*.png` + `fastlane/.../phoneScreenshots/`.
 
 ---
 
