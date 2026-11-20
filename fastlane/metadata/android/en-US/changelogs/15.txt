@@ -1,0 +1,1 @@
+Keep screen on while streaming (screen no longer turns off by inactivity during a live camera view) and new app icon ("camera with a single eye" concept).

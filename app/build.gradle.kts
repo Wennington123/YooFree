@@ -37,10 +37,10 @@ android {
         applicationId = "br.yoofree.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 14
-        versionName = "1.0.9"
-        buildConfigField("String", "VERSION_NAME", "\"1.0.9\"")
-        buildConfigField("int", "VERSION_CODE", "14")
+        versionCode = 15
+        versionName = "1.0.10"
+        buildConfigField("String", "VERSION_NAME", "\"1.0.10\"")
+        buildConfigField("int", "VERSION_CODE", "15")
     }
 
     signingConfigs {

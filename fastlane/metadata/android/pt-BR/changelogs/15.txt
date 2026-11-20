@@ -1,0 +1,1 @@
+Tela permanece acordada durante a transmissão (o display não apaga mais por inatividade enquanto assiste à câmera) e novo ícone do app (conceito "câmera de um olhar só").
