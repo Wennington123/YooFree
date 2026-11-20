@@ -1,11 +1,13 @@
 package br.yoofree.app.ui
 
-import android.content.Intent
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.SurfaceTexture
 import android.net.Uri
 import android.view.Surface
 import android.view.TextureView
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -52,6 +54,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,7 +68,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
@@ -99,6 +101,16 @@ fun YooFreeApp(onThemeMode: (ThemeMode) -> Unit = {}) {
     if (vm.password.isEmpty()) vm.password = prefs.getString("pass", "") ?: ""
     vm.ptzInvert = prefs.getBoolean("ptzInvert", false)
     var showSettings by remember { mutableStateOf(false) }
+
+    // Mantem a tela acordada enquanto ha stream rodando. Sem isso o display apaga
+    // no timeout do sistema e o video congela/pauza (nada mais mantinha vivo: nem
+    // WakeLock, nem keepScreenOn). Flag nativo da janela — independe da versao do
+    // Compose BOM; volta a seguir o timeout normal quando desconecta.
+    LaunchedEffect(vm.connected) {
+        val window = (context as? Activity)?.window ?: return@LaunchedEffect
+        if (vm.connected) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
 
     val landscape = LocalConfiguration.current.orientation ==
         android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -298,9 +310,6 @@ private fun VideoSurface(
             .background(Color.Black)
             .border(1.dp, Color.White.copy(alpha = 0.06f), RoundedCornerShape(28.dp))
             .clipToBounds()
-            // Mantem a tela acordada enquanto ha stream rodando: sem isso o display
-            // apaga no timeout do sistema e o video congela/pauza em background.
-            .keepScreenOn(vm.connected)
             .onSizeChanged { vm.viewW = it.width.toFloat(); vm.viewH = it.height.toFloat() }
             .pointerInput(vm) {
                 detectTransformGestures { centroid, pan, zoomChange, _ ->
