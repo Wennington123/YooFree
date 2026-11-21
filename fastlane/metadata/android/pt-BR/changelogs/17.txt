@@ -1,0 +1,1 @@
+Adicionada a escolha de idioma por app no Android 13+ (Configurações > Apps > YooFree > Idioma): inglês ou português (Brasil).

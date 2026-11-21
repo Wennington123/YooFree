@@ -35,7 +35,7 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Onde pegar |
 |---|---|---|
-| **Android** 7+ | `YooFree-1.0.10.apk` (assinado) | [APK direto](../../releases/latest/download/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://github-store.org/app?repo=Wennington123/YooFree) · [RepoStore](https://repostore.in/) |
+| **Android** 7+ | `YooFree-1.0.11.apk` (assinado) | [APK direto](../../releases/latest/download/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://github-store.org/app?repo=Wennington123/YooFree) · [RepoStore](https://repostore.in/) |
 
 > **Já funcionam sem aprovação:** [Obtainium](https://github.com/ImranR98/Obtainium)
 > (toque [aqui](obtainium://app/%7B%22id%22%3A%22br.yoofree.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FWennington123%2FYooFree%22%2C%22author%22%3A%22Wennington123%22%2C%22name%22%3A%22YooFree%22%7D)
@@ -55,6 +55,7 @@ Todas as versões fazem a mesma coisa:
 - 🎥 **Gravação local** em MP4 (sem re-encode, sem nuvem)
 - 🔄 **Girar** a imagem em 90° (útil se a câmera estiver "de cabeça pra baixo")
 - 💡 **Tela sempre ativa** enquanto assiste — não apaga por inatividade durante a transmissão
+- 🌐 **Português e inglês**: o inglês é o padrão (fallback) e o português (Brasil) entra automaticamente quando o sistema está em português — escolha também por app em *Configurações do Android → Apps → YooFree → Idioma*
 - 🎛️ **Configurações**: tema (sistema/claro/escuro), inverter comandos PTZ, glossário dos termos e apoio ao projeto
 
 E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede.
