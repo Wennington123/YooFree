@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.text.format.DateFormat
 import br.yoofree.app.BuildConfig
+import br.yoofree.app.R
 
 /**
  * Buffer in-memory dos eventos relevantes do app. Substitui a dependencia de
@@ -32,14 +33,15 @@ object YooLog {
      */
     fun buildReport(context: Context, extra: Map<String, String>): String {
         val sb = StringBuilder()
-        sb.append("Relatorio automatico do YooFree (bug/camera travando ou preta)\n")
-        sb.append("\n**Versao:** ").append(BuildConfig.VERSION_NAME)
+        sb.append(context.getString(R.string.report_title)).append("\n")
+        sb.append("\n**Version:** ").append(BuildConfig.VERSION_NAME)
             .append(" (").append(BuildConfig.VERSION_CODE).append(")\n")
         sb.append("**Device:** ").append(Build.MANUFACTURER).append(" ").append(Build.MODEL).append("\n")
         sb.append("**Android:** ").append(Build.VERSION.RELEASE)
             .append(" (API ").append(Build.VERSION.SDK_INT).append(")\n")
         for ((k, v) in extra) sb.append("**").append(k).append(":** ").append(v).append("\n")
-        sb.append("\n<details><summary>Log de eventos</summary>\n\n```\n")
+        sb.append("\n<details><summary>").append(context.getString(R.string.report_log_summary))
+            .append("</summary>\n\n```\n")
         val events = dump()
         val budget = 5500
         val trimmed = if (events.length > budget) {

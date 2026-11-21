@@ -15,12 +15,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.yoofree.app.R
 
 /** Modo de tema escolhido nas configuracoes. */
-enum class ThemeMode(val id: String, val label: String) {
-    System("system", "Sistema"),
-    Light("light", "Claro"),
-    Dark("dark", "Escuro");
+enum class ThemeMode(val id: String, val labelRes: Int) {
+    System("system", R.string.theme_system),
+    Light("light", R.string.theme_light),
+    Dark("dark", R.string.theme_dark);
 
     companion object {
         fun fromId(id: String?): ThemeMode = entries.firstOrNull { it.id == id } ?: System

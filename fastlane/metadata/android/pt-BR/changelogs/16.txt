@@ -1,0 +1,1 @@
+App traduzido: inglês agora é o idioma padrão e o português (Brasil) é usado automaticamente quando o celular está em português (ou escolhido por app nas configurações do Android). Ícone do app menor, com margens corretas.

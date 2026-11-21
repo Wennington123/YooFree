@@ -1,0 +1,1 @@
+Corrige a tela de vídeo preta/congelada (issue #5): o decodificador não morre mais em silêncio e agora registra os primeiros erros de decodificação. As sessões RTSP enviam keepalive a cada 10 s, então os streams não caem mais após ~15-20 s, e foi corrigida uma dessincronia do parser quando o send() deixava de ler a resposta (com testes unitários para o depacketizer HEVC).

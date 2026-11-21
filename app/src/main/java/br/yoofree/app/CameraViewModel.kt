@@ -16,9 +16,11 @@ import br.yoofree.app.net.LanScanner
  */
 class CameraViewModel(app: Application) : AndroidViewModel(app) {
 
+    private val res = app.resources
+
     var host by mutableStateOf("")
     var password by mutableStateOf("")
-    var status by mutableStateOf("Parado")
+    var status by mutableStateOf(res.getString(R.string.status_stopped))
     var connected by mutableStateOf(false)
     var recording by mutableStateOf(false)
     var zoom by mutableStateOf(1.0f)
@@ -160,25 +162,25 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
             scanner?.cancel()
             scanner = null
             scanning = false
-            status = "Busca cancelada"
+            status = res.getString(R.string.status_scan_cancelled)
             return
         }
         foundHosts = emptyList()
         scanning = true
-        status = "Procurando camera na rede..."
+        status = res.getString(R.string.status_scanning)
         val s = LanScanner(
             onFound = { ip ->
                 main.post {
                     foundHosts = foundHosts + ip
-                    status = "Camera encontrada: $ip"
+                    status = res.getString(R.string.status_camera_found, ip)
                 }
             },
             onDone = {
                 main.post {
                     scanning = false
                     scanner = null
-                    if (foundHosts.isEmpty()) status = "Nenhuma camera encontrada na rede" else
-                        status = "Clique em um IP para conectar"
+                    if (foundHosts.isEmpty()) status = res.getString(R.string.status_no_camera) else
+                        status = res.getString(R.string.status_pick_ip)
                 }
             }
         )

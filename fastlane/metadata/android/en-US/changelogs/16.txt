@@ -1,0 +1,1 @@
+Translated the whole app: English is now the default language, Brazilian Portuguese is used automatically when the phone is set to Portuguese (or chosen per app in Android settings). Smaller app icon with proper margins.

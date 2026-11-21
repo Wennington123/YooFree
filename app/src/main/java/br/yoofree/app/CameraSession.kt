@@ -1,6 +1,7 @@
 package br.yoofree.app
 
 import android.content.Context
+import br.yoofree.app.R
 import android.view.Surface
 import br.yoofree.app.media.AudioPlayer
 import br.yoofree.app.media.Mp4Muxer
@@ -20,9 +21,10 @@ class CameraSession(
     private val onState: (String) -> Unit
 ) : RtspClient.Listener {
 
+    private val res = context.resources
     private val displayHost = if (port == 554) host else "$host:$port"
     private val client = RtspClient(host, port, password = password, listener = this)
-    private val decoder = VideoDecoder { onState("Erro: $it") }
+    private val decoder = VideoDecoder { onState(res.getString(R.string.status_error, it)) }
     private val audio = AudioPlayer()
     private var muxer: Mp4Muxer? = null
     @Volatile private var sawError = false
@@ -33,7 +35,7 @@ class CameraSession(
 
     fun connect() {
         sawError = false
-        onState("Conectando a $displayHost…")
+        onState(res.getString(R.string.status_connecting, displayHost))
         decoder.start()
         client.start()
     }
@@ -61,7 +63,7 @@ class CameraSession(
     }
 
     override fun onPtzResult(code: Int) {
-        if (code >= 400) onState("PTZ recusado pela camera ($code)")
+        if (code >= 400) onState(res.getString(R.string.status_ptz_refused, code))
     }
 
     fun isRecording(): Boolean = muxer != null
@@ -74,8 +76,12 @@ class CameraSession(
             val file = current.fileBytes
             muxer = null
             onState(
-                if (error != null) "ERRO: $error"
-                else "Gravacao salva ($samples quadros, ${file / 1024} KB)"
+                if (error != null) res.getString(R.string.status_recording_failed, error)
+                else res.getString(
+                    R.string.status_recording_saved,
+                    samples,
+                    (file / 1024).toInt(),
+                )
             )
             return false
         }
@@ -83,18 +89,18 @@ class CameraSession(
         val s = sps
         val p = pps
         if (v == null || s == null || p == null) {
-            onState("Aguarde o video iniciar para gravar")
+            onState(res.getString(R.string.status_wait_video))
             return false
         }
         val dir = File(context.getExternalFilesDir(null), "YooFree").apply { mkdirs() }
         val name = "YooFree_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date()) + ".mp4"
         return try {
             muxer = Mp4Muxer(File(dir, name), v, s, p, onError = { onState(it) })
-            onState("Gravando: $name")
+            onState(res.getString(R.string.status_recording, name))
             true
         } catch (t: Throwable) {
             muxer = null
-            onState("Erro ao gravar: ${t.message}")
+            onState(res.getString(R.string.status_recording_error, t.message ?: ""))
             false
         }
     }
@@ -104,7 +110,7 @@ class CameraSession(
         muxer = null
     }
 
-    override fun onConnected() = onState("Conectado — video HEVC")
+    override fun onConnected() = onState(res.getString(R.string.status_connected))
 
     override fun onAccessUnit(nals: List<ByteArray>, ptsUs: Long) {
         if (vps == null || sps == null || pps == null) {
@@ -123,11 +129,16 @@ class CameraSession(
 
     override fun onError(message: String, cause: Throwable?) {
         sawError = true
-        onState("Erro: $message")
+        val text = if (cause is RtspClient.AuthRequired || message == "RTSP password required") {
+            res.getString(R.string.status_password_required)
+        } else {
+            message
+        }
+        onState(res.getString(R.string.status_error, text))
     }
 
     override fun onDisconnected() {
-        if (!sawError) onState("Desconectado")
+        if (!sawError) onState(res.getString(R.string.status_disconnected))
     }
 }
 

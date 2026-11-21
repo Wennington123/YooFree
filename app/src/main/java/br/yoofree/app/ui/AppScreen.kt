@@ -73,6 +73,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -194,7 +195,7 @@ private fun LandscapeScreen(
                             ConnectButton(vm, prefs, surfaceReady, compact = true)
                             RoundButton(
                                 glyph = if (vm.recording) "■" else "●",
-                                description = if (vm.recording) "Parar gravação" else "Gravar",
+                                description = stringResource(if (vm.recording) R.string.desc_record_stop else R.string.desc_record_start),
                                 enabled = vm.connected,
                                 size = 44.dp,
                                 container = if (vm.recording) Bad else PanelHi,
@@ -202,20 +203,20 @@ private fun LandscapeScreen(
                             )
                             RoundButton(
                                 glyph = "♪",
-                                description = if (vm.audioOn) "Desligar som" else "Ligar som",
+                                description = stringResource(if (vm.audioOn) R.string.desc_audio_off else R.string.desc_audio_on),
                                 size = 44.dp,
                                 content = if (vm.audioOn) Accent else TextLow,
                                 onClick = { vm.toggleAudio() },
                             )
                             RoundButton(
                                 glyph = "⟳",
-                                description = "Girar imagem",
+                                description = stringResource(R.string.desc_rotate),
                                 size = 44.dp,
                                 onClick = { vm.cycleRotation() },
                             )
                             RoundButton(
                                 glyph = "⚙",
-                                description = "Configurações",
+                                description = stringResource(R.string.desc_settings),
                                 size = 44.dp,
                                 onClick = onOpenSettings,
                             )
@@ -258,7 +259,7 @@ private fun Header(vm: CameraViewModel, onOpenSettings: () -> Unit) {
         Spacer(Modifier.width(8.dp))
         RoundButton(
             glyph = "⚙",
-            description = "Configurações",
+            description = stringResource(R.string.desc_settings),
             size = 40.dp,
             onClick = onOpenSettings,
         )
@@ -380,7 +381,7 @@ private fun ConnectArea(
                     OutlinedTextField(
                         value = vm.host,
                         onValueChange = { vm.host = it },
-                        label = { Text("IP da câmera") },
+                        label = { Text(stringResource(R.string.label_camera_ip)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Uri,
@@ -409,7 +410,7 @@ private fun ConnectArea(
                         modifier = Modifier.height(56.dp),
                     ) {
                         Text(
-                            text = if (vm.scanning) "Parar" else "Buscar",
+                            text = stringResource(if (vm.scanning) R.string.action_stop_search else R.string.action_search),
                             style = MaterialTheme.typography.labelMedium,
                         )
                     }
@@ -418,8 +419,8 @@ private fun ConnectArea(
                 OutlinedTextField(
                     value = vm.password,
                     onValueChange = { vm.password = it },
-                    label = { Text("Senha do RTSP (opcional)") },
-                    supportingText = { Text("Só se a câmera exigir senha (ex.: acesso por VPN). Usuário: admin") },
+                    label = { Text(stringResource(R.string.label_rtsp_password)) },
+                    supportingText = { Text(stringResource(R.string.help_rtsp_password)) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(
@@ -453,7 +454,7 @@ private fun ConnectArea(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Text(
-                                    text = "Câmera em $ip",
+                                    text = stringResource(R.string.action_camera_at, ip),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextHigh,
                                 )
@@ -477,7 +478,7 @@ private fun ConnectButton(
     if (compact) {
         RoundButton(
             glyph = if (vm.connected) "⏻" else "▶",
-            description = if (vm.connected) "Desconectar" else "Conectar",
+            description = stringResource(if (vm.connected) R.string.action_disconnect else R.string.action_connect),
             enabled = vm.connected || (vm.host.isNotBlank() && surfaceReady),
             size = 44.dp,
             container = if (vm.connected) PanelHi else Accent,
@@ -505,7 +506,7 @@ private fun ConnectButton(
         modifier = Modifier.fillMaxWidth().height(52.dp),
     ) {
         Text(
-            text = if (vm.connected) "Desconectar" else "Conectar",
+            text = stringResource(if (vm.connected) R.string.action_disconnect else R.string.action_connect),
             style = MaterialTheme.typography.titleMedium,
         )
     }
@@ -531,7 +532,7 @@ private fun ControlCard(vm: CameraViewModel) {
             ) {
                 RoundButton(
                     glyph = if (vm.recording) "■" else "●",
-                    description = if (vm.recording) "Parar gravação" else "Gravar",
+                    description = stringResource(if (vm.recording) R.string.desc_record_stop else R.string.desc_record_start),
                     enabled = vm.connected,
                     size = 52.dp,
                     container = if (vm.recording) Bad else PanelHi,
@@ -541,14 +542,14 @@ private fun ControlCard(vm: CameraViewModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     RoundButton(
                         glyph = "♪",
-                        description = if (vm.audioOn) "Desligar som" else "Ligar som",
+                        description = stringResource(if (vm.audioOn) R.string.desc_audio_off else R.string.desc_audio_on),
                         size = 44.dp,
                         content = if (vm.audioOn) Accent else TextLow,
                         onClick = { vm.toggleAudio() },
                     )
                     RoundButton(
                         glyph = "⟳",
-                        description = "Girar imagem",
+                        description = stringResource(R.string.desc_rotate),
                         size = 44.dp,
                         onClick = { vm.cycleRotation() },
                     )
@@ -567,7 +568,7 @@ private fun ZoomStepper(vm: CameraViewModel, compact: Boolean) {
     ) {
         RoundButton(
             glyph = "+",
-            description = "Aumentar zoom",
+            description = stringResource(R.string.desc_zoom_in),
             enabled = vm.zoom < 5f,
             size = size,
             onClick = { vm.zoomBy(0.5f) },
@@ -581,7 +582,7 @@ private fun ZoomStepper(vm: CameraViewModel, compact: Boolean) {
         )
         RoundButton(
             glyph = "−",
-            description = "Diminuir zoom",
+            description = stringResource(R.string.desc_zoom_out),
             enabled = vm.zoom > 1f,
             size = size,
             onClick = { vm.zoomBy(-0.5f) },
@@ -595,7 +596,7 @@ private fun PtzPad(vm: CameraViewModel, compact: Boolean) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         RoundButton(
             glyph = "↑",
-            description = "Mover para cima",
+            description = stringResource(R.string.desc_ptz_up),
             enabled = vm.connected,
             size = size,
             onClick = { vm.ptz("UP") },
@@ -604,21 +605,21 @@ private fun PtzPad(vm: CameraViewModel, compact: Boolean) {
         Row(horizontalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 4.dp)) {
             RoundButton(
                 glyph = "←",
-                description = "Mover para esquerda",
+                description = stringResource(R.string.desc_ptz_left),
                 enabled = vm.connected,
                 size = size,
                 onClick = { vm.ptz("LEFT") },
             )
             RoundButton(
                 glyph = "↓",
-                description = "Mover para baixo",
+                description = stringResource(R.string.desc_ptz_down),
                 enabled = vm.connected,
                 size = size,
                 onClick = { vm.ptz("DOWN") },
             )
             RoundButton(
                 glyph = "→",
-                description = "Mover para direita",
+                description = stringResource(R.string.desc_ptz_right),
                 enabled = vm.connected,
                 size = size,
                 onClick = { vm.ptz("RIGHT") },
@@ -663,28 +664,16 @@ private fun RoundButton(
 
 /** Termos que o app permeia, pro glossario das configuracoes. */
 private val Glossary = listOf(
-    "RTSP" to "Protocolo que controla o stream: é o \"controle remoto\" do vídeo " +
-        "pela rede (SETUP, PLAY, TEARDOWN). O YooFree fala direto com a câmera " +
-        "nele, na sua rede local.",
-    "RTP" to "Transporte dos pacotes de vídeo e áudio em tempo real, por cima do " +
-        "RTSP (na mesma conexão TCP, canais intercalados).",
-    "HEVC / H.265" to "Codec de vídeo da câmera: comprime 1080p usando pouca banda. " +
-        "É decodificado direto no hardware do celular.",
-    "G.711" to "Codec de áudio (A-law/µ-law) que essas câmeras transmitem junto " +
-        "com o vídeo.",
-    "PTZ" to "Pan/Tilt/Zoom — os comandos que giram a câmera (cima, baixo, " +
-        "esquerda, direita).",
-    "ONVIF" to "Padrão aberto de câmeras IP. Nessa linha, o stream vive no path " +
-        "/onvif1 (e /onvif2 para o stream secundário).",
-    "SDP" to "Descrição do stream que a câmera devolve no DESCRIBE: quais trilhas " +
-        "existem (vídeo, áudio) e os URIs de cada uma.",
-    "Digest (HTTP)" to "Autenticação por desafio usada quando a câmera tem senha " +
-        "no RTSP: a senha nunca trafega em texto puro.",
-    "IDR / keyframe" to "Quadro-chave que reinicia a decodificação. O app espera " +
-        "um IDR antes de desenhar — é por isso que a imagem nasce limpa.",
-    "VPN (WireGuard/Tailscale)" to "Túnel criptografado que coloca o celular " +
-        "\"dentro\" da rede de casa, pra acessar a câmera de fora sem expor nada " +
-        "na internet.",
+    "RTSP" to R.string.glossary_rtsp,
+    "RTP" to R.string.glossary_rtp,
+    "HEVC / H.265" to R.string.glossary_hevc,
+    "G.711" to R.string.glossary_g711,
+    "PTZ" to R.string.glossary_ptz,
+    "ONVIF" to R.string.glossary_onvif,
+    "SDP" to R.string.glossary_sdp,
+    "Digest (HTTP)" to R.string.glossary_digest,
+    "IDR / keyframe" to R.string.glossary_idr,
+    "VPN (WireGuard/Tailscale)" to R.string.glossary_vpn,
 )
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -721,12 +710,12 @@ private fun SettingsSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
-                text = "Configurações",
+                text = stringResource(R.string.settings_title),
                 color = TextHigh,
                 style = MaterialTheme.typography.titleLarge,
             )
 
-            Text("Tema", color = TextLow, style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(R.string.theme_title), color = TextLow, style = MaterialTheme.typography.labelMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ThemeMode.entries.forEach { mode ->
                     FilterChip(
@@ -735,7 +724,7 @@ private fun SettingsSheet(
                             selectedMode = mode
                             onThemeMode(mode)
                         },
-                        label = { Text(mode.label) },
+                        label = { Text(stringResource(mode.labelRes)) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Accent,
                             selectedLabelColor = OnAccent,
@@ -750,10 +739,9 @@ private fun SettingsSheet(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("Inverter comandos PTZ", color = TextHigh, style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.ptz_invert_title), color = TextHigh, style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        "Câmera montada de cabeça pra baixo: cima vira baixo e " +
-                            "esquerda vira direita.",
+                        stringResource(R.string.ptz_invert_desc),
                         color = TextLow,
                         style = MaterialTheme.typography.bodySmall,
                     )
@@ -769,16 +757,15 @@ private fun SettingsSheet(
 
             HorizontalDivider(color = Hairline)
 
-            Text("Apoie o projeto", color = TextHigh, style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.support_title), color = TextHigh, style = MaterialTheme.typography.titleMedium)
             Text(
-                "O YooFree é 100% gratuito, sem anúncio e open source. Se ele te " +
-                    "economizou o app antigo cheio de anúncio, tomo um café:",
+                stringResource(R.string.support_body),
                 color = TextLow,
                 style = MaterialTheme.typography.bodySmall,
             )
             Image(
                 painter = painterResource(R.drawable.pix_qrcode),
-                contentDescription = "QR Code Pix",
+                contentDescription = stringResource(R.string.pix_qr_desc),
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .size(160.dp),
@@ -789,7 +776,7 @@ private fun SettingsSheet(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Pix: $pixKey",
+                    text = stringResource(R.string.pix_label, pixKey),
                     color = TextHigh,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
@@ -800,11 +787,11 @@ private fun SettingsSheet(
                     onClick = {
                         clipboard.setText(AnnotatedString(pixKey))
                         android.widget.Toast.makeText(
-                            context, "Chave Pix copiada", Toast.LENGTH_SHORT
+                            context, context.getString(R.string.pix_copied), Toast.LENGTH_SHORT
                         ).show()
                     },
                     shape = RoundedCornerShape(12.dp),
-                ) { Text("Copiar", style = MaterialTheme.typography.labelMedium) }
+                ) { Text(stringResource(R.string.action_copy), style = MaterialTheme.typography.labelMedium) }
             }
             OutlinedButton(
                 onClick = {
@@ -816,27 +803,25 @@ private fun SettingsSheet(
                 },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Apoiar no Ko-fi (cartão ou PayPal)") }
+            ) { Text(stringResource(R.string.support_kofi)) }
 
             HorizontalDivider(color = Hairline)
 
-            Text("Glossário", color = TextHigh, style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.glossary_title), color = TextHigh, style = MaterialTheme.typography.titleMedium)
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Glossary.forEach { (term, desc) ->
                     Column {
                         Text(term, color = Accent, style = MaterialTheme.typography.labelMedium)
-                        Text(desc, color = TextLow, style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(desc), color = TextLow, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
 
             HorizontalDivider(color = Hairline)
 
-            Text("Diagnóstico", color = TextHigh, style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.diagnostics_title), color = TextHigh, style = MaterialTheme.typography.titleMedium)
             Text(
-                "Se a câmera travar ou a imagem ficar preta, envie o relatório: " +
-                    "ele abre uma issue no GitHub já preenchida com o log dos " +
-                    "eventos do app (sem dados pessoais — senha nunca é incluída).",
+                stringResource(R.string.diagnostics_body),
                 color = TextLow,
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -845,8 +830,8 @@ private fun SettingsSheet(
                     val report = br.yoofree.app.diag.YooLog.buildReport(
                         context,
                         mapOf(
-                            "Conectado" to vm.connected.toString(),
-                            "Gravando" to vm.recording.toString(),
+                            context.getString(R.string.report_connected) to vm.connected.toString(),
+                            context.getString(R.string.report_recording) to vm.recording.toString(),
                         ),
                     )
                     val url = android.net.Uri.parse(
@@ -854,38 +839,40 @@ private fun SettingsSheet(
                     ).buildUpon()
                         .appendQueryParameter(
                             "title",
-                            "[app] Relatório automático v" +
+                            context.getString(
+                                R.string.report_app_issue_title,
                                 context.packageManager.getPackageInfo(context.packageName, 0).versionName,
+                            ),
                         )
                         .appendQueryParameter("body", report)
                         .build()
                     runCatching {
                         context.startActivity(Intent(Intent.ACTION_VIEW, url))
                     }.onFailure {
-                        Toast.makeText(context, "Sem navegador para abrir a issue", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.toast_no_browser), Toast.LENGTH_SHORT).show()
                     }
                 },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Enviar relatório de falhas") }
+            ) { Text(stringResource(R.string.action_send_report)) }
 
             HorizontalDivider(color = Hairline)
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("YooFree v$version", color = TextHigh, style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.version_line, version), color = TextHigh, style = MaterialTheme.typography.labelMedium)
                 Text(
-                    "GPL-3.0 — sem nuvem, sem conta, sem anúncios.",
+                    stringResource(R.string.license_line),
                     color = TextLow,
                     style = MaterialTheme.typography.bodySmall,
                 )
                 LinkRow(
                     iconRes = R.drawable.ic_globe,
-                    label = "Site oficial: yoofree.qd.je",
+                    label = stringResource(R.string.link_site),
                     url = "https://yoofree.qd.je/",
                 )
                 LinkRow(
                     iconRes = R.drawable.ic_github,
-                    label = "Código-fonte: GitHub/Wennington123/YooFree",
+                    label = stringResource(R.string.link_source),
                     url = "https://github.com/Wennington123/YooFree",
                 )
             }

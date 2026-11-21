@@ -113,7 +113,7 @@ class RtspClient(
             if (setupCode != 200) {
                 // 2) Plano B: DESCRIBE em conexao NOVA (a atual pode ter sido fechada
                 //    pelos SETUPS recusados; e o proprio DESCRIBE pode empoisonar).
-                reconnect("SETUP direto falhou")
+                reconnect("direct SETUP failed")
                 runCatching {
                     val (code, sdp) = describe()
                     Log.i(TAG, "DESCRIBE -> $code")
@@ -123,15 +123,12 @@ class RtspClient(
                         audioUrl = tracks.audio
                         Log.i(TAG, "SDP video=$videoUrl audio=$audioUrl")
                     } else if ((code == 401 || code == 403) && password.isEmpty()) {
-                        // Sem o aviso aqui, o usuario so via "SETUP falhou: " vazio.
-                        throw RuntimeException(
-                            "A camera exige senha RTSP (Digest) - preencha o campo de senha e conecte de novo"
-                        )
+                        throw AuthRequired()
                     }
                 }.onFailure { throwIfAuthError(it); Log.i(TAG, "DESCRIBE indisponivel: ${it.message}") }
 
                 val sdpTargets = (listOfNotNull(videoUrl) + directTargets).distinct()
-                reconnect("antes do SETUP com SDP")
+                reconnect("before SETUP with SDP")
                 runSetup(sdpTargets).let { (code, resp) ->
                     setupCode = code
                     setupResponse = resp
@@ -197,8 +194,11 @@ class RtspClient(
 
     private fun throwIfAuthError(t: Throwable) {
         // O aviso de senha precisa atravessar o runCatching do DESCRIBE.
-        if (t.message?.contains("exige senha RTSP") == true) throw t
+        if (t is AuthRequired) throw t
     }
+
+    /** Sinaliza que o firmware exige senha RTSP; a UI traduz a mensagem. */
+    class AuthRequired : RuntimeException("RTSP password required")
 
     private fun connect() {
         val s = Socket()
@@ -255,20 +255,20 @@ class RtspClient(
         val first = response.lineSequence().firstOrNull()?.trim().orEmpty()
         val hint = when {
             first.isEmpty() -> when {
-                authHeader != null -> " (a camera fechou a conexao; a senha esta correta?)"
+                authHeader != null -> " (the camera closed the connection; is the password correct?)"
                 password.isEmpty() ->
-                    " (a camera fechou a conexao sem responder; se ela tiver senha, preencha o campo de senha)"
-                else -> " (a camera fechou a conexao sem responder)"
+                    " (the camera closed the connection without answering; if it has a password, fill in the password field)"
+                else -> " (the camera closed the connection without answering)"
             }
             statusCode(response) == 401 || statusCode(response) == 403 ->
-                " (a camera exige senha no RTSP)"
-            statusCode(response) == 404 -> " (esse URI de SETUP nao existe no firmware)"
-            statusCode(response) == 405 -> " (firmware nao aceita SETUP nesse URI)"
-            statusCode(response) == 501 -> " (firmware nao implementa SETUP)"
-            statusCode(response) == 400 && authHeader != null -> " (senha incorreta?)"
+                " (the camera requires a password over RTSP)"
+            statusCode(response) == 404 -> " (this SETUP URI does not exist in the firmware)"
+            statusCode(response) == 405 -> " (firmware does not accept SETUP on this URI)"
+            statusCode(response) == 501 -> " (firmware does not implement SETUP)"
+            statusCode(response) == 400 && authHeader != null -> " (wrong password?)"
             else -> ""
         }
-        throw RuntimeException("$stage falhou: $first$hint")
+        throw RuntimeException("$stage failed: $first$hint")
     }
 
     private fun statusCode(response: String): Int =
@@ -516,7 +516,7 @@ class RtspClient(
                         Log.w(TAG, "keepalive respondeu $code; seguindo")
                     } else if (code != null && code >= 400) {
                         YooLog.add("ERROR", "RTSP", "camera respondeu: $firstLine")
-                        throw RuntimeException("camera respondeu: $firstLine")
+                        throw RuntimeException("camera replied: $firstLine")
                     }
                     off = end
                 }
@@ -590,7 +590,7 @@ class RtspClient(
      */
     fun sendPtz(command: String) {
         if (!running) {
-            listener.onError("PTZ $command: sem conexao", null)
+            listener.onError("PTZ $command: not connected", null)
             return
         }
         Thread({

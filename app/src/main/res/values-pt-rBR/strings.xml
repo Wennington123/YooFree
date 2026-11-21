@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">YooFree</string>
+
+    <!-- Connection status -->
+    <string name="status_stopped">Parado</string>
+    <string name="status_scan_cancelled">Busca cancelada</string>
+    <string name="status_scanning">Procurando câmera na rede…</string>
+    <string name="status_camera_found">Câmera encontrada: %1$s</string>
+    <string name="status_no_camera">Nenhuma câmera encontrada na rede</string>
+    <string name="status_pick_ip">Toque em um IP para conectar</string>
+
+    <!-- Session status -->
+    <string name="status_error">Erro: %1$s</string>
+    <string name="status_connecting">Conectando a %1$s…</string>
+    <string name="status_ptz_refused">PTZ recusado pela câmera (%1$d)</string>
+    <string name="status_password_required">A câmera exige senha RTSP (Digest) — preencha o campo de senha e conecte de novo</string>
+    <string name="status_recording_saved">Gravação salva (%1$d quadros, %2$d KB)</string>
+    <string name="status_recording_failed">ERRO: %1$s</string>
+    <string name="status_wait_video">Aguarde o vídeo iniciar para gravar</string>
+    <string name="status_recording">Gravando: %1$s</string>
+    <string name="status_recording_error">Erro ao gravar: %1$s</string>
+    <string name="status_connected">Conectado — vídeo HEVC</string>
+    <string name="status_disconnected">Desconectado</string>
+
+    <!-- Connect area -->
+    <string name="label_camera_ip">IP da câmera</string>
+    <string name="action_search">Buscar</string>
+    <string name="action_stop_search">Parar</string>
+    <string name="label_rtsp_password">Senha do RTSP (opcional)</string>
+    <string name="help_rtsp_password">Só se a câmera exigir senha (ex.: acesso por VPN). Usuário: admin</string>
+    <string name="action_camera_at">Câmera em %1$s</string>
+    <string name="action_connect">Conectar</string>
+    <string name="action_disconnect">Desconectar</string>
+
+    <!-- Controls -->
+    <string name="desc_record_start">Gravar</string>
+    <string name="desc_record_stop">Parar gravação</string>
+    <string name="desc_audio_on">Ligar som</string>
+    <string name="desc_audio_off">Desligar som</string>
+    <string name="desc_rotate">Girar imagem</string>
+    <string name="desc_settings">Configurações</string>
+    <string name="desc_zoom_in">Aumentar zoom</string>
+    <string name="desc_zoom_out">Diminuir zoom</string>
+    <string name="desc_ptz_up">Mover para cima</string>
+    <string name="desc_ptz_down">Mover para baixo</string>
+    <string name="desc_ptz_left">Mover para esquerda</string>
+    <string name="desc_ptz_right">Mover para direita</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configurações</string>
+    <string name="theme_title">Tema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
+    <string name="ptz_invert_title">Inverter comandos PTZ</string>
+    <string name="ptz_invert_desc">Câmera montada de cabeça pra baixo: cima vira baixo e esquerda vira direita.</string>
+
+    <string name="support_title">Apoie o projeto</string>
+    <string name="support_body">O YooFree é 100% gratuito, sem anúncio e open source. Se ele te economizou o app antigo cheio de anúncio, tomo um café:</string>
+    <string name="pix_qr_desc">QR Code Pix</string>
+    <string name="pix_label">Pix: %1$s</string>
+    <string name="pix_copied">Chave Pix copiada</string>
+    <string name="action_copy">Copiar</string>
+    <string name="support_kofi">Apoiar no Ko-fi (cartão ou PayPal)</string>
+
+    <string name="glossary_title">Glossário</string>
+    <string name="glossary_rtsp">Protocolo que controla o stream: é o \"controle remoto\" do vídeo pela rede (SETUP, PLAY, TEARDOWN). O YooFree fala direto com a câmera nele, na sua rede local.</string>
+    <string name="glossary_rtp">Transporte dos pacotes de vídeo e áudio em tempo real, por cima do RTSP (na mesma conexão TCP, canais intercalados).</string>
+    <string name="glossary_hevc">Codec de vídeo da câmera: comprime 1080p usando pouca banda. É decodificado direto no hardware do celular.</string>
+    <string name="glossary_g711">Codec de áudio (A-law/µ-law) que essas câmeras transmitem junto com o vídeo.</string>
+    <string name="glossary_ptz">Pan/Tilt/Zoom — os comandos que giram a câmera (cima, baixo, esquerda, direita).</string>
+    <string name="glossary_onvif">Padrão aberto de câmeras IP. Nessa linha, o stream vive no path /onvif1 (e /onvif2 para o stream secundário).</string>
+    <string name="glossary_sdp">Descrição do stream que a câmera devolve no DESCRIBE: quais trilhas existem (vídeo, áudio) e os URIs de cada uma.</string>
+    <string name="glossary_digest">Autenticação por desafio usada quando a câmera tem senha no RTSP: a senha nunca trafega em texto puro.</string>
+    <string name="glossary_idr">Quadro-chave que reinicia a decodificação. O app espera um IDR antes de desenhar — é por isso que a imagem nasce limpa.</string>
+    <string name="glossary_vpn">Túnel criptografado que coloca o celular \"dentro\" da rede de casa, pra acessar a câmera de fora sem expor nada na internet.</string>
+
+    <string name="diagnostics_title">Diagnóstico</string>
+    <string name="diagnostics_body">Se a câmera travar ou a imagem ficar preta, envie o relatório: ele abre uma issue no GitHub já preenchida com o log dos eventos do app (sem dados pessoais — senha nunca é incluída).</string>
+    <string name="action_send_report">Enviar relatório de falhas</string>
+    <string name="toast_no_browser">Sem navegador para abrir a issue</string>
+
+    <string name="version_line">YooFree v%1$s</string>
+    <string name="license_line">GPL-3.0 — sem nuvem, sem conta, sem anúncios.</string>
+    <string name="link_site">Site oficial: yoofree.qd.je</string>
+    <string name="link_source">Código-fonte: GitHub/Wennington123/YooFree</string>
+
+    <!-- Issue report -->
+    <string name="report_title">Relatório automático do YooFree (bug/câmera travando ou preta)</string>
+    <string name="report_app_issue_title">[app] Relatório automático v%1$s</string>
+    <string name="report_log_summary">Log de eventos</string>
+    <string name="report_connected">Conectado</string>
+    <string name="report_recording">Gravando</string>
+</resources>
