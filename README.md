@@ -17,7 +17,7 @@ sem telemetria**. Só você e a sua câmera.
 [![Site](https://img.shields.io/badge/site-yoofree.qd.je-8b7cf6)](https://yoofree.qd.je/)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-apoie%20o%20projeto-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/wenningtondaquino)
 [![Zapstore](https://img.shields.io/badge/Zapstore-instalar-00D09C?logo=data:image/svg%2Bxml;base64,PHN2ZyB3aWR0aD0iMTkiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAxOSAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE4LjgzNzkgMTMuOTcxMUw4Ljg0OTU2IDAuMzU2MDg2QzguMzA0NjQgLTAuMzg2Njg0IDcuMTA0MzggMC4xMjg0NzkgNy4zMDEwMyAxLjAyMDczTDkuMDQ2ODYgOC45NDIzMkM5LjE2MjY4IDkuNDY3ODMgOC43NDg4NyA5Ljk2MjY2IDguMTk2NDEgOS45NTkzTDAuODcxMDMyIDkuOTE0NzdDMC4xOTQ5MzQgOS45MTA2NiAtMC4yMjM5NzUgMTAuNjI5MyAwLjEyNjc0OCAxMS4xOTE2TDcuNjk3NDMgMjMuMzI5N0M3Ljk5OTU3IDIzLjgxNDEgNy43MzI2NCAyNC40NDQ3IDcuMTY3NDQgMjQuNTgxNkw1LjQwOTU4IDI1LjAwNzZDNC43MDE5OSAyNS4xNzkgNC41MTcyNyAyNi4wNzM0IDUuMTAxODYgMjYuNDk3NEwxMi40NTcyIDMxLjgzMjZDMTIuOTU1NCAzMi4xOTQgMTMuNjcxMSAzMS45NDExIDEzLjgxNDcgMzEuMzUyOUwxNS44NTA1IDIzLjAxNTJDMTYuMDEzNyAyMi4zNDY1IDE1LjMyODEgMjEuNzgwMSAxNC42NzYyIDIyLjA0NTJMMTMuMDY2MSAyMi43MDAxQzEyLjU2MTkgMjIuOTA1MiAxMS45OTEgMjIuNjA5MiAxMS44ODQ5IDIyLjA4NzdMMTAuNzUyMSAxNi41MjI0QzEwLjY0ODYgMTYuMDE0IDExLjAzOCAxNS41MzY1IDExLjU3MDQgMTUuNTE4OEwxOC4xNjM5IDE1LjI5OThDMTguODUyOSAxNS4yNzY5IDE5LjIzODMgMTQuNTE3IDE4LjgzNzkgMTMuOTcxMVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo%3D&logoColor=white)](https://zapstore.dev/apps/br.yoofree.app)
-[![F-Droid](https://img.shields.io/badge/F--Droid-em%20revis%C3%A3o-lightgrey?logo=fdroid&logoColor=75A143)](https://f-droid.org)
+[![F-Droid](https://img.shields.io/f-droid/v/br.yoofree.app?logo=fdroid&logoColor=75A143)](https://f-droid.org/packages/br.yoofree.app)
 [![OpenAPK](https://img.shields.io/badge/OpenAPK-em%20aprova%C3%A7%C3%A3o-lightgrey)](https://www.openapk.net)
 
 🌐 **Site oficial:** https://yoofree.qd.je/
@@ -41,10 +41,10 @@ sem telemetria**. Só você e a sua câmera.
 > (toque [aqui](obtainium://app/%7B%22id%22%3A%22br.yoofree.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FWennington123%2FYooFree%22%2C%22author%22%3A%22Wennington123%22%2C%22name%22%3A%22YooFree%22%7D)
 > no celular com o app instalado), **Komi Store** (o link acima abre o app
 > direto na página do YooFree) e **RepoStore** — ambos
-> indexam releases do GitHub; no RepoStore basta buscar `YooFree`. Em revisão nas lojas
-> livres: **F-Droid**
-> ([MR !54850](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/54850),
-> pipeline verde), **OpenAPK** e **IzzyOnDroid** — os
+> indexam releases do GitHub; no RepoStore basta buscar `YooFree`. **F-Droid**
+> aceitou o app ([MR !54850](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/54850)
+> mergeada) — a página em https://f-droid.org/packages/br.yoofree.app entra no ar
+> quando o build server publicar; **OpenAPK** e **IzzyOnDroid** seguem em revisão — os
 > links entram aqui assim que aprovarem.
 
 Todas as versões fazem a mesma coisa:
