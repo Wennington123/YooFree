@@ -7,11 +7,29 @@ sem conta, sem IA**.
 Feito em **Python + PySide6**. O vídeo é decodificado por:
 
 - **Linux:** GStreamer (`avdec_h265`) — se não tiver, cai pro PyAV
+- **AppImage:** PyAV (FFmpeg vai dentro do pacote)
 - **Windows:** PyAV (FFmpeg empacotado no wheel)
 
 ---
 
-## Linux
+## Linux — AppImage (recomendado)
+
+Um arquivo, sem root, roda em Ubuntu 22.04+, Debian 12+, Fedora 36+, Arch,
+openSUSE e derivadas:
+
+```bash
+curl -fLO https://github.com/Wennington123/YooFree/releases/latest/download/YooFree-x86_64.AppImage
+chmod +x YooFree-x86_64.AppImage
+./YooFree-x86_64.AppImage                 # abre a janela
+./YooFree-x86_64.AppImage --host 192.168.1.2
+```
+
+O AppImage já traz Python, PySide6 e FFmpeg — **não depende de GStreamer** da
+distro. Se o sistema não tiver FUSE (Ubuntu 22.04+ sem `libfuse2`) ou der erro
+de montagem, use `--appimage-extract-and-run`. Para integrar ao menu, instale
+o [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher).
+
+## Linux — install.sh (alternativa)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Wennington123/YooFree/main/desktop/packaging/install.sh | bash

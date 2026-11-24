@@ -36,6 +36,7 @@ sem telemetria**. Só você e a sua câmera.
 | Plataforma | Pacote | Onde pegar |
 |---|---|---|
 | **Android** 7+ | `YooFree-1.0.11.apk` (assinado) | [APK direto](../../releases/latest/download/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://github-store.org/app?repo=Wennington123/YooFree) · [RepoStore](https://repostore.in/) |
+| **Linux** x86_64 | `YooFree-x86_64.AppImage` (sem root) | [AppImage direto](../../releases/latest/download/YooFree-x86_64.AppImage) · [tar.gz + install.sh](../../releases/latest/download/yoofree-desktop.tar.gz) |
 
 > **Já funcionam sem aprovação:** [Obtainium](https://github.com/ImranR98/Obtainium)
 > (toque [aqui](obtainium://app/%7B%22id%22%3A%22br.yoofree.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FWennington123%2FYooFree%22%2C%22author%22%3A%22Wennington123%22%2C%22name%22%3A%22YooFree%22%7D)
