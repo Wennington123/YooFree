@@ -1,7 +1,7 @@
 # YooFree
 
 Cliente **aberto e sem anúncios** para câmeras **Yoosee / GW (Gwell)**, para
-**Android**.
+**Android 7+** e **Linux** (x86_64).
 
 Fala direto com a câmera na sua rede local: **sem nuvem, sem conta, sem IA,
 sem telemetria**. Só você e a sua câmera.
@@ -11,7 +11,7 @@ sem telemetria**. Só você e a sua câmera.
 </p>
 
 [![Licença: GPL-3.0](https://img.shields.io/badge/licen%C3%A7a-GPL--3.0-7C6CF0.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/Wennington123/YooFree)](../../releases)
+[![Releases](https://img.shields.io/badge/releases-todas%20as%20plataformas-7C6CF0.svg)](../../releases)
 [![Downloads](https://img.shields.io/github/downloads/Wennington123/YooFree/total)](../../releases)
 [![Build](https://github.com/Wennington123/YooFree/actions/workflows/build.yml/badge.svg)](../../actions)
 [![Site](https://img.shields.io/badge/site-yoofree.qd.je-8b7cf6)](https://yoofree.qd.je/)
@@ -35,8 +35,15 @@ sem telemetria**. Só você e a sua câmera.
 
 | Plataforma | Pacote | Onde pegar |
 |---|---|---|
-| **Android** 7+ | `YooFree-1.0.11.apk` (assinado) | [APK direto](../../releases/download/android-latest/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://github-store.org/app?repo=Wennington123/YooFree) · [RepoStore](https://repostore.in/) |
-| **Linux** x86_64 | `YooFree-x86_64.AppImage` (sem root) | [AppImage direto](../../releases/download/desktop-latest/YooFree-x86_64.AppImage) · [tar.gz + install.sh](../../releases/download/desktop-latest/yoofree-desktop.tar.gz) |
+| **Android** 7+ | `YooFree-1.0.12.apk` (assinado) | [APK direto](../../releases/download/android-latest/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://github-store.org/app?repo=Wennington123/YooFree) · [RepoStore](https://repostore.in/) |
+| **Linux** x86_64 | `YooFree-x86_64.AppImage` (sem root, 117 MB) | [AppImage direto](../../releases/download/desktop-latest/YooFree-x86_64.AppImage) · [tar.gz + install.sh](../../releases/download/desktop-latest/yoofree-desktop.tar.gz) |
+| **Windows** | 🚧 em desenvolvimento | [acompanhe](#todo) |
+| **iOS** | 🚧 em desenvolvimento | [acompanhe](#todo) |
+
+As versões são publicadas separadas por plataforma: tags `v1.0.x` (Android) e
+`desktop-v0.x` (Linux). Os links acima apontam para os aliases `android-latest` e
+`desktop-latest`, que são atualizados a cada release — a versão exata fica na
+página da release.
 
 > **Já funcionam sem aprovação:** [Obtainium](https://github.com/ImranR98/Obtainium)
 > (toque [aqui](obtainium://app/%7B%22id%22%3A%22br.yoofree.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FWennington123%2FYooFree%22%2C%22author%22%3A%22Wennington123%22%2C%22name%22%3A%22YooFree%22%7D)
@@ -59,7 +66,7 @@ Todas as versões fazem a mesma coisa:
 - 🌐 **Português e inglês**: o inglês é o padrão (fallback) e o português (Brasil) entra automaticamente quando o sistema está em português — escolha também por app em *Configurações do Android → Apps → YooFree → Idioma*
 - 🎛️ **Configurações**: tema (sistema/claro/escuro), inverter comandos PTZ, glossário dos termos e apoio ao projeto
 
-E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede.
+E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede. O desktop Linux tem PTZ, zoom (1x–5x), girar e gravar; lá o IP da câmera é digitado e o som ainda não está implementado.
 
 ---
 
@@ -81,6 +88,33 @@ E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** 
 > cima de uma build com assinatura diferente.
 
 O celular precisa estar no **mesmo Wi‑Fi** da câmera.
+
+---
+
+## Linux
+
+AppImage: um arquivo, sem root, roda em **Ubuntu 22.04+, Debian 12+, Fedora 36+,
+Arch, openSUSE** e derivadas (x86_64). Já traz Python, PySide6 e FFmpeg — não
+depende do GStreamer da distro.
+
+```bash
+curl -fLO https://github.com/Wennington123/YooFree/releases/download/desktop-latest/YooFree-x86_64.AppImage
+chmod +x YooFree-x86_64.AppImage
+./YooFree-x86_64.AppImage                  # abre a janela
+./YooFree-x86_64.AppImage --host 192.168.1.2
+```
+
+- Sem FUSE (ou erro de montagem)? `./YooFree-x86_64.AppImage --appimage-extract-and-run`
+- Integração com o menu: [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)
+
+Alternativa via `install.sh` (detecta pacman/apt/dnf/zypper/apk/xbps/emerge,
+instala em `~/.local`, cria o comando `yoofree` + atalho no menu):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Wennington123/YooFree/main/desktop/packaging/install.sh | bash
+```
+
+Detalhes de build e estrutura: [desktop/README.md](desktop/README.md).
 
 ---
 
@@ -147,6 +181,21 @@ simultâneas). Suporte a múltiplas câmeras está nos planos.
 
 ---
 
+## TODO
+
+1. 🪟 **Versão Windows** — instalador (`.exe`/NSIS) + portátil (`.zip`), x64 e
+   ARM64. O código do desktop já roda em Windows com PyAV
+   (`desktop/yoofree/player_av.py`); falta empacotar e publicar — o workflow
+   `desktop-windows.yml` existe mas está desativado (só roda manualmente), e as
+   releases devem entrar como `desktop-v<versão>` junto do Linux.
+2. 🍎 **Versão iOS** — app nativo (Swift + AVFoundation). O que falta é portar o
+   cliente RTSP mínimo e o muxer MP4 para Swift; a App Store também exige conta
+   paga de desenvolvedor para distribuir. Alternativa de curto prazo: exibir a
+   câmera em apps de terceiros que aceitem RTSP, o que hoje não funciona por causa
+   do `DESCRIBE 400` (veja a explicação do cliente RTSP próprio abaixo).
+
+---
+
 ## No futuro (implementações e sugestões)
 
 Ideias que estão no radar, em ordem de prioridade — sugestões novas são bem-vindas
@@ -210,11 +259,14 @@ app/          app Android (Kotlin + Compose)
   .../media/      decoder HEVC, áudio G.711, muxer MP4
   .../net/        busca de câmeras na rede local (LanScanner)
   .../ui/         tema e telas (Compose)
+desktop/      app desktop (Python + PySide6)
+  yoofree/        cliente RTSP, depacketizer HEVC, muxer MP4, UI
+  packaging/      install.sh, uninstall.sh, build do AppImage e do tar.gz
 assets/       ícone (SVG) + QR do Pix
 site/         página oficial (GitHub Pages)
 docs/         pesquisa de protocolo (engenharia reversa dos apps oficiais)
 scripts/      toolchain Android local
-.github/      workflows (APK assinado e Pages)
+.github/      workflows (APK assinado, desktop Linux e Pages)
 ```
 
 ---
@@ -245,6 +297,36 @@ YOOFREE_KEY_PASSWORD=...
 No CI, os mesmos valores vêm de secrets (`YOOFREE_KEYSTORE_BASE64`,
 `YOOFREE_STORE_PASSWORD`, `YOOFREE_KEY_ALIAS`, `YOOFREE_KEY_PASSWORD`) e o build
 cai para debug se eles não existirem.
+
+**Desktop (Linux)** — Python 3.9+:
+
+```bash
+cd desktop
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+python3 main.py --host 192.168.1.2      # rodar do código
+
+bash packaging/build-appimage.sh        # YooFree-<versão>-x86_64.AppImage
+bash packaging/build-release.sh         # yoofree-desktop.tar.gz (para o install.sh)
+```
+
+O AppImage é montado no CI com PyInstaller (onedir) + `appimagetool` em
+`ubuntu-22.04` (glibc 2.35) e força o backend PyAV, sem depender do GStreamer do
+sistema.
+
+### Publicando uma release
+
+As duas plataformas versionam separado; cada workflow atualiza seu alias rolling
+(`android-latest` / `desktop-latest`), então os links de download do README e do
+site nunca mudam.
+
+```bash
+# Android: tag v1.0.13
+gh workflow run build.yml -f release_tag=v1.0.13
+
+# Desktop Linux: bump desktop/yoofree/__init__.py antes, tag desktop-v0.2
+gh workflow run desktop-linux.yml -f release_tag=desktop-v0.2
+```
 
 ---
 
