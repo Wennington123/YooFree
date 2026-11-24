@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 VERSION="$(python3 -c 'import yoofree; print(yoofree.__version__)')"
-# nome fixo: o install.sh baixa de releases/latest/download/yoofree-desktop.tar.gz
+# nome fixo: o install.sh baixa de releases/download/desktop-latest/yoofree-desktop.tar.gz
 OUT="../yoofree-desktop.tar.gz"
 
 find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true

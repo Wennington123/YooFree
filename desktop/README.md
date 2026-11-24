@@ -18,7 +18,7 @@ Um arquivo, sem root, roda em Ubuntu 22.04+, Debian 12+, Fedora 36+, Arch,
 openSUSE e derivadas:
 
 ```bash
-curl -fLO https://github.com/Wennington123/YooFree/releases/latest/download/YooFree-x86_64.AppImage
+curl -fLO https://github.com/Wennington123/YooFree/releases/download/desktop-latest/YooFree-x86_64.AppImage
 chmod +x YooFree-x86_64.AppImage
 ./YooFree-x86_64.AppImage                 # abre a janela
 ./YooFree-x86_64.AppImage --host 192.168.1.2

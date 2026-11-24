@@ -74,23 +74,35 @@ jobs:
         if: inputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.release_tag }}
+          TAG: ${{ inputs.release_tag }}
         run: |
-          VER="${RELEASE_TAG#v}"
-          APPIMAGE="YooFree-${VER}-x86_64.AppImage"
-          # nomes fixos: o site/README apontam pra releases/latest/download/...
-          cp "$APPIMAGE" YooFree-x86_64.AppImage
-          ASSETS=("$APPIMAGE" YooFree-x86_64.AppImage yoofree-desktop.tar.gz)
-          [ -f "$APPIMAGE.zsync" ] && ASSETS+=("$APPIMAGE.zsync")
+          VERSION="$(ls YooFree-*-x86_64.AppImage | sed -E 's#^YooFree-(.*)-x86_64\.AppImage$#\1#')"
+          # nomes fixos dentro da release: o site/README/install.sh apontam pra
+          # releases/download/desktop-latest/<arquivo>
+          cp "YooFree-${VERSION}-x86_64.AppImage" YooFree-x86_64.AppImage
+          ASSETS=(YooFree-x86_64.AppImage yoofree-desktop.tar.gz)
+          # o .zsync so vai na release versionada (o nome interno dele fixa a versao)
+          if [ -f "YooFree-${VERSION}-x86_64.AppImage.zsync" ]; then
+            ASSETS+=("YooFree-${VERSION}-x86_64.AppImage.zsync")
+          fi
+          NOTES="Desktop Linux ${VERSION} (tag ${TAG}), commit ${GITHUB_SHA:0:7}
+          - YooFree-x86_64.AppImage: sem root, roda em Ubuntu 22.04+/Debian 12+/Fedora 36+/Arch
+          - yoofree-desktop.tar.gz: install.sh, instala em ~/.local"
 
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" "${ASSETS[@]}" --clobber
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${ASSETS[@]}" --clobber
           else
-            NOTES=$(printf '%s\n- %s: AppImage (sem root, roda em qualquer distro)\n- %s: tar.gz + install.sh (instala em ~/.local)' \
-              "Desktop Linux ${RELEASE_TAG} gerado pelo workflow desktop-linux, commit ${GITHUB_SHA:0:7}" \
-              "YooFree-x86_64.AppImage" "yoofree-desktop.tar.gz")
-            gh release create "$RELEASE_TAG" "${ASSETS[@]}" \
+            gh release create "$TAG" "${ASSETS[@]}" \
               --target "$GITHUB_SHA" \
-              --title "YooFree ${VER}" \
+              --title "YooFree desktop ${VERSION}" \
               --notes "$NOTES"
           fi
+
+          # alias rolling: link estavel, independente de quantas releases existam
+          if ! gh release view desktop-latest >/dev/null 2>&1; then
+            gh release create desktop-latest --target "$GITHUB_SHA" --prerelease \
+              --title "YooFree desktop (latest)" \
+              --notes "Aponta sempre para o AppImage/tar.gz mais recente do desktop Linux.
+          O arquivo versionado fica na release desktop-v<versao>."
+          fi
+          gh release upload desktop-latest YooFree-x86_64.AppImage yoofree-desktop.tar.gz --clobber

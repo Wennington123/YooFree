@@ -74,13 +74,26 @@ jobs:
           NAME_DEBUG="YooFree-${RELEASE_TAG#v}-debug.apk"
           cp "$RELEASE_APK" "$NAME"
           # nome fixo: o site aponta direto pra
-          # releases/latest/download/YooFree.apk
+          # releases/download/android-latest/YooFree.apk (alias rolling)
           cp "$RELEASE_APK" "YooFree.apk"
           cp "$DEBUG_APK" "$NAME_DEBUG"
           NOTES=$(printf '%s\n- %s: assinada (instalar por cima da anterior)\n- %s: debug (para diagnostico, nao atualiza a assinada)' \
             "APK Android ${RELEASE_TAG} gerado pelo workflow build, commit ${GITHUB_SHA:0:7}" \
             "$NAME" "$NAME_DEBUG")
-          gh release create "$RELEASE_TAG" "$NAME" "YooFree.apk" "$NAME_DEBUG" \
-            --target "$GITHUB_SHA" \
-            --title "YooFree ${RELEASE_TAG#v}" \
-            --notes "$NOTES"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$NAME" "YooFree.apk" "$NAME_DEBUG" --clobber
+          else
+            gh release create "$RELEASE_TAG" "$NAME" "YooFree.apk" "$NAME_DEBUG" \
+              --target "$GITHUB_SHA" \
+              --title "YooFree ${RELEASE_TAG#v}" \
+              --notes "$NOTES"
+          fi
+
+          # alias rolling: o site/README apontam pra
+          # releases/download/android-latest/YooFree.apk (estavel entre releases)
+          if ! gh release view android-latest >/dev/null 2>&1; then
+            gh release create android-latest --target "$GITHUB_SHA" --prerelease \
+              --title "YooFree Android (latest)" \
+              --notes "Aponta sempre para o APK assinado mais recente. O arquivo versionado fica na release da versao."
+          fi
+          gh release upload android-latest "YooFree.apk" "$NAME" --clobber

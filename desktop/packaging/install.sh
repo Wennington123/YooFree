@@ -9,7 +9,7 @@
 set -euo pipefail
 
 REPO="Wennington123/YooFree"
-TARBALL="https://github.com/$REPO/releases/latest/download/yoofree-desktop.tar.gz"
+TARBALL="https://github.com/$REPO/releases/download/desktop-latest/yoofree-desktop.tar.gz"
 PREFIX="${PREFIX:-$HOME/.local}"
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WITH_DEPS=0
