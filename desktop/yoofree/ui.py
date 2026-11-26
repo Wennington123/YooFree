@@ -80,13 +80,14 @@ class Controller(QObject):
         self.vps = self.sps = self.pps = None
         self.recording = False
 
-    def start(self, host):
+    def start(self, host, password=""):
         self.vps = self.sps = self.pps = None
         self.player.start()
         self.client = RtspClient(
             host,
             on_access_unit=lambda nals, pts: self.auReceived.emit(nals, pts),
             on_state=lambda msg: self.stateChanged.emit(msg),
+            password=password,
         )
         self.client.start()
 
@@ -139,7 +140,7 @@ class Controller(QObject):
 
 
 class MainWindow(QWidget):
-    def __init__(self, host=None):
+    def __init__(self, host=None, password=""):
         super().__init__()
         self.setWindowTitle("YooFree")
         self.resize(960, 720)
@@ -163,6 +164,10 @@ class MainWindow(QWidget):
         self.status.setObjectName("status")
         self.ip = QLineEdit("")
         self.ip.setPlaceholderText("IP da camera (ex.: 192.168.1.2)")
+        self.password = QLineEdit(password)
+        self.password.setEchoMode(QLineEdit.Password)
+        self.password.setPlaceholderText("senha (opcional)")
+        self.password.setMaximumWidth(160)
 
         self.btn_conn = QPushButton("Conectar")
         self.btn_conn.clicked.connect(self._toggle_conn)
@@ -180,6 +185,7 @@ class MainWindow(QWidget):
         top = QHBoxLayout()
         top.addWidget(QLabel("IP:"))
         top.addWidget(self.ip, 1)
+        top.addWidget(self.password)
         top.addWidget(self.btn_conn)
         top.addWidget(self.btn_rec)
         top.addWidget(self.btn_rotate)
@@ -222,7 +228,7 @@ class MainWindow(QWidget):
         if not host:
             self.status.setText("Informe o IP da camera")
             return
-        self.controller.start(host)
+        self.controller.start(host, self.password.text())
         self._set_connected(True)
 
     def _toggle_rec(self):
@@ -263,8 +269,8 @@ class MainWindow(QWidget):
         super().closeEvent(event)
 
 
-def run(host=None):
+def run(host=None, password=""):
     app = QApplication([])
-    win = MainWindow(host)
+    win = MainWindow(host, password)
     win.show()
     app.exec()

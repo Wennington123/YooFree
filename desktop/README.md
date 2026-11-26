@@ -50,7 +50,12 @@ xbps, emerge), instala em `~/.local` (sem root para o app), e cria o comando
 ```bash
 yoofree                       # abre a janela
 yoofree --host 192.168.1.2    # já conecta
+yoofree --host 192.168.1.2 --password segredo   # firmware que pede auth
 ```
+
+O campo **senha** (opcional) também está na janela; por linha de comando dá pra usar
+`--password` ou a variável `YOOFREE_RTSP_PASSWORD`. O keepalive RTSP vai a cada 10s
+e a conexão reconecta sozinha se cair.
 
 Desinstalar: `bash packaging/uninstall.sh`
 
