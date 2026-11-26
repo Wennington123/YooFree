@@ -36,7 +36,7 @@ sem telemetria**. Só você e a sua câmera.
 | Plataforma | Pacote | Onde pegar |
 |---|---|---|
 | **Android** 7+ | `YooFree-1.0.12.apk` (assinado) | [APK direto](../../releases/download/android-latest/YooFree.apk) · [Zapstore](https://zapstore.dev/apps/br.yoofree.app) · [Komi Store](https://github-store.org/app?repo=Wennington123/YooFree) · [RepoStore](https://repostore.in/) |
-| **Linux** x86_64 | `YooFree-x86_64.AppImage` (sem root, 117 MB) | [AppImage direto](../../releases/download/desktop-latest/YooFree-x86_64.AppImage) · [tar.gz + install.sh](../../releases/download/desktop-latest/yoofree-desktop.tar.gz) |
+| **Linux** x86_64 | `YooFree-x86_64.AppImage` 0.2.1 (sem root, 117 MB) | [AppImage direto](../../releases/download/desktop-latest/YooFree-x86_64.AppImage) · [tar.gz + install.sh](../../releases/download/desktop-latest/yoofree-desktop.tar.gz) |
 | **Windows** | 🚧 em desenvolvimento | [acompanhe](#todo) |
 | **iOS** | 🚧 em desenvolvimento | [acompanhe](#todo) |
 
@@ -66,7 +66,7 @@ Todas as versões fazem a mesma coisa:
 - 🌐 **Português e inglês**: o inglês é o padrão (fallback) e o português (Brasil) entra automaticamente quando o sistema está em português — escolha também por app em *Configurações do Android → Apps → YooFree → Idioma*
 - 🎛️ **Configurações**: tema (sistema/claro/escuro), inverter comandos PTZ, glossário dos termos e apoio ao projeto
 
-E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede. O desktop Linux tem PTZ, zoom (1x–5x), girar e gravar; lá o IP da câmera é digitado e o som ainda não está implementado.
+E o Android ainda tem **modo paisagem** com HUD que esconde, **zoom por gesto** de dois dedos, **som** da câmera e **busca automática** dela na rede. O desktop Linux tem PTZ, zoom (1x–5x), girar, gravar, senha RTSP (Digest), keepalive de 10s e reconexão automática; lá o IP da câmera é digitado e o som ainda não está implementado.
 
 ---
 
@@ -106,9 +106,13 @@ chmod +x YooFree-x86_64.AppImage
 
 - Sem FUSE (ou erro de montagem)? `./YooFree-x86_64.AppImage --appimage-extract-and-run`
 - Integração com o menu: [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)
+- Câmera que pede senha: campo **senha** na janela, ou `--password` /
+  `YOOFREE_RTSP_PASSWORD`
+- O keepalive RTSP vai a cada 10s e a conexão reconecta sozinha (5 tentativas com
+  backoff) se cair
 
 Alternativa via `install.sh` (detecta pacman/apt/dnf/zypper/apk/xbps/emerge,
-instala em `~/.local`, cria o comando `yoofree` + atalho no menu):
+instala em `~/.local`, cria o comando `yoofree` + atalho no menu com ícone):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Wennington123/YooFree/main/desktop/packaging/install.sh | bash
@@ -141,7 +145,7 @@ Normalmente não. O YooFree conecta sem senha na maioria das firmwares (o SETUP
 vai direto, sem DESCRIBE). Algumas firmwares desafiam o `DESCRIBE` e fecham a
 conexão se o SETUP chegar sem autenticação — nessas, informe a senha no app
 (HTTP Digest, usuário padrão `admin`). Se aparecer "a câmera fechou a conexão",
-tente preencher o campo de senha.
+tente preencher o campo de senha (Android e desktop).
 
 **Fala com a nuvem da Yoosee?**
 Não. A conexão é direta (`IP:554`), na sua rede local.
@@ -324,8 +328,8 @@ site nunca mudam.
 # Android: tag v1.0.13
 gh workflow run build.yml -f release_tag=v1.0.13
 
-# Desktop Linux: bump desktop/yoofree/__init__.py antes, tag desktop-v0.2
-gh workflow run desktop-linux.yml -f release_tag=desktop-v0.2
+# Desktop Linux: bump desktop/yoofree/__init__.py antes, tag desktop-v0.2.2
+gh workflow run desktop-linux.yml -f release_tag=desktop-v0.2.2
 ```
 
 ---
