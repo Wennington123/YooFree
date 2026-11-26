@@ -4,7 +4,7 @@ import datetime as dt
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QPointF, Qt, Signal
-from PySide6.QtGui import QImage, QPainter
+from PySide6.QtGui import QIcon, QImage, QPainter
 from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -269,8 +269,14 @@ class MainWindow(QWidget):
         super().closeEvent(event)
 
 
+def window_icon():
+    """Icone do app (tambem usado pelo atalho do sistema)."""
+    return QIcon(str(Path(__file__).with_name("icon.png")))
+
+
 def run(host=None, password=""):
     app = QApplication([])
+    app.setWindowIcon(window_icon())
     win = MainWindow(host, password)
     win.show()
     app.exec()

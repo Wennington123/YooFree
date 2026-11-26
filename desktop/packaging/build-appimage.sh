@@ -40,7 +40,7 @@ if [ -n "$AV_LIBS" ]; then EXTRA+=(--add-binary "$AV_LIBS/*:av.libs"); fi
 
 "$PY" -m PyInstaller --noconfirm --clean --onedir --name yoofree \
   --distpath "$BUILD/dist" --workpath "$BUILD/work" --specpath "$BUILD" \
-  --collect-submodules yoofree \
+  --collect-submodules yoofree --collect-data yoofree \
   --collect-binaries av --collect-data av \
   "${EXTRA[@]}" \
   --exclude-module tkinter \

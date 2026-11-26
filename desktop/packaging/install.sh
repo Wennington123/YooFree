@@ -167,21 +167,28 @@ EOF
   chmod +x "$bin/yoofree"
 
   local apps="$PREFIX/share/applications"
-  mkdir -p "$apps"
+  local icons="$PREFIX/share/icons/hicolor/256x256/apps"
+  mkdir -p "$apps" "$icons"
+  if [ -f "$lib_src/yoofree/icon.png" ]; then
+    cp "$lib_src/yoofree/icon.png" "$icons/yoofree.png"
+  fi
   cat > "$apps/yoofree.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=YooFree
 Comment=Camera Yoosee/GW na rede local
 Exec=$bin/yoofree
+Icon=yoofree
 Terminal=false
 Categories=AudioVideo;Video;
+StartupWMClass=yoofree
 EOF
 
   ok "Instalado:"
   echo "    comando : yoofree"
   echo "    app     : $dest"
   echo "    atalho  : $apps/yoofree.desktop"
+  echo "    icone   : $icons/yoofree.png"
 
   case ":$PATH:" in
     *":$bin:"*) ;;
